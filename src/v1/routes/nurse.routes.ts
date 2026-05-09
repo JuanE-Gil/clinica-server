@@ -12,7 +12,7 @@ const router = Router();
 
 /**
  * @swagger
- * /nurses/all:
+ * /nurses/:
  *   get:
  *     summary: Listado de todo el personal de enfermería
  *     tags:
@@ -21,11 +21,11 @@ const router = Router();
  *       200:
  *         description: Lista obtenida
  */
-router.get('/all', nurseCtrl.getAllNurses);
+router.get('/', nurseCtrl.getAllNurses);
 
 /**
  * @swagger
- * /nurses/add:
+ * /nurses/:
  *   post:
  *     summary: Registrar una nueva enfermera
  *     tags:
@@ -40,7 +40,7 @@ router.get('/all', nurseCtrl.getAllNurses);
  *       201:
  *         description: Registro exitoso
  */
-router.post('/add', nurseCtrl.createNurse);
+router.post('/', nurseCtrl.createNurse);
 
 /**
  * @swagger
