@@ -1,8 +1,6 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 import type { Request, Response } from 'express';
 import pool from '../config/db.js';
-import { generateClinicalReportPdf } from '../utils/pdf.generator.js';
 
 export const getAllPatients = async (_req: Request, res: Response) => {
     try {

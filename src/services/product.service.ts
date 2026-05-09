@@ -1,76 +1,44 @@
-/* eslint-disable max-len */
-import type { Request, Response } from 'express';
-import pool from '../config/db.js';
+import { ProductModel, type IProduct } from '../models/product.model.js';
 
-export const getAllProducts = async (_req: Request, res: Response) => {
-    try {
-        const result = await pool.query('SELECT * FROM products ORDER BY name ASC');
-        res.json(result.rows);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+// 1. Obtener todos los productos
+export const getAllProducts = async () => {
+    return await ProductModel.findAll();
 };
 
-export const getProductById = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Producto no encontrado' });
-        }
-        res.json(result.rows[0]);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+// 2. Obtener un producto por ID
+export const getProductById = async (id: string) => {
+    const product = await ProductModel.findById(id);
+    if (!product) throw new Error('Producto no encontrado');
+    return product;
 };
 
-export const createNewProduct = async (req: Request, res: Response) => {
-    const { name, amount, price_cost, price_sale } = req.body;
-
-    if (price_cost < 0 || price_sale < 0 || amount < 0) {
-        return res.status(400).json({ error: 'Valores negativos no permitidos.' });
+// 3. Crear un nuevo producto
+export const createNewProduct = async (data: IProduct) => {
+    if (data.price_cost < 0 || data.price_sale < 0 || data.amount < 0) {
+        throw new Error('No se permiten valores negativos en el inventario.');
     }
 
-    try {
-        const query = `
-        INSERT INTO products (name, amount, price_cost, price_sale) VALUES ($1, $2, $3, $4) RETURNING *`;
-        const result = await pool.query(query, [name, amount, price_cost, price_sale]);
-        res.status(201).json(result.rows[0]);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+    return await ProductModel.create(data);
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { name, amount, price_cost, price_sale } = req.body;
+// 4. Actualizar un producto
+export const updateProduct = async (id: string, data: Partial<IProduct>) => {
+    const product = await ProductModel.findById(id);
+    if (!product) throw new Error('El producto que intenta actualizar no existe.');
 
-    try {
-        const query = `
-            UPDATE products
-            SET name = $1, amount = $2, price_cost = $3, price_sale = $4
-            WHERE id = $5
-            RETURNING *`;
-        const result = await pool.query(query, [name, amount, price_cost, price_sale, id]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'No encontrado' });
-        res.json(result.rows[0]);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+    const updated = await ProductModel.update(id, data);
+    return updated;
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'No encontrado' });
-        res.json({ message: 'Producto eliminado', product: result.rows[0] });
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+// 5. Eliminar un producto
+export const deleteProduct = async (id: string) => {
+    const deleted = await ProductModel.delete(id);
+    if (!deleted) throw new Error('No se pudo eliminar: Producto no encontrado.');
+
+    return deleted;
 };
 
+// 6. Obtener datos para el reporte
 export const getProductsForReport = async () => {
-    const result = await pool.query('SELECT name, amount, price_cost, price_sale FROM products ORDER BY amount ASC');
-    return result.rows;
+    return await ProductModel.findAllForReport();
 };
