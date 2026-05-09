@@ -40,7 +40,7 @@ router.get('/', nurseCtrl.getAllNurses);
  *       201:
  *         description: Registro exitoso
  */
-router.post('/', nurseCtrl.createNurse);
+router.post('/', nurseCtrl.createNewNurse);
 
 /**
  * @swagger
@@ -79,7 +79,7 @@ router.post('/', nurseCtrl.createNurse);
  *         required: true
  */
 router.get('/:id', nurseCtrl.getNurseById);
-router.put('/:id', nurseCtrl.updateNurse);
-router.delete('/:id', nurseCtrl.deleteNurse);
+router.put('/:id', nurseCtrl.updateNurseById);
+router.delete('/:id', nurseCtrl.deleteNurseById);
 
 export default router;

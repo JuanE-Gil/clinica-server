@@ -21,6 +21,6 @@ const router = Router();
  *       500:
  *         description: Error en transacción o stock insuficiente
  */
-router.post('/', adminCtrl.createAdministration);
+router.post('/', adminCtrl.createNewAdministration);
 
 export default router;

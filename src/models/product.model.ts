@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import pool from '../config/db.js';
+import type { PoolClient } from 'pg';
 
 export interface IProduct {
     id?: string;
@@ -46,5 +47,16 @@ export const ProductModel = {
     async findAllForReport(): Promise<IProduct[]> {
         const { rows } = await pool.query('SELECT name, amount, price_cost, price_sale FROM products ORDER BY amount ASC');
         return rows;
+    },
+
+    async updateStockWithClient(client: PoolClient, id: string, quantity: number) {
+        const query = `
+            UPDATE products
+            SET amount = amount - $1
+            WHERE id = $2
+            RETURNING amount`;
+
+        const { rows } = await client.query(query, [quantity, id]);
+        return rows[0];
     },
 };

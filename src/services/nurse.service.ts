@@ -1,69 +1,41 @@
-/* eslint-disable max-len */
-import type { Request, Response } from 'express';
-import pool from '../config/db.js';
+/* eslint-disable preserve-caught-error */
+import { NurseModel, type INurse } from '../models/nurse.model.js';
 
-export const getAllNurses = async (_req: Request, res: Response) => {
+// 1. Obtener todas las enfermeras
+export const getAllNurses = async () => {
+    return await NurseModel.findAll();
+};
+
+// 2. Obtener enfermera por ID
+export const getNurseById = async (id: string) => {
+    const nurse = await NurseModel.findById(id);
+    if (!nurse) throw new Error('Enfermera no encontrada');
+    return nurse;
+};
+
+// 3. Registrar nueva enfermera
+export const createNurse = async (data: INurse) => {
     try {
-        const result = await pool.query('SELECT * FROM nurses ORDER BY name ASC');
-        console.log(`\n📦 [GET] Enviando ${result.rows.length} enfermeras.`);
-        res.json(result.rows);
+        return await NurseModel.create(data);
     } catch (err: any) {
-        res.status(500).json({ error: err.message });
+        // Manejo del error de número de licencia duplicado (CEP)
+        if (err.code === '23505') {
+            throw new Error('El número de licencia (CEP) ya se encuentra registrado.');
+        }
+        throw err;
     }
 };
 
-export const getNurseById = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT * FROM nurses WHERE id = $1', [id]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Enfermera no encontrada' });
-        res.json(result.rows[0]);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+// 4. Actualizar enfermera
+export const updateNurse = async (id: string, data: Partial<INurse>) => {
+    const updated = await NurseModel.update(id, data);
+    if (!updated) throw new Error('No se pudo actualizar: Enfermera no encontrada');
+    return updated;
 };
 
-export const createNurse = async (req: Request, res: Response) => {
-    const { name, license_number } = req.body;
-    try {
-        const result = await pool.query('INSERT INTO nurses (name, license_number) VALUES ($1, $2) RETURNING *', [
-            name,
-            license_number,
-        ]);
-        console.log(`\n👤 [POST] Nueva enfermera registrada: ${name}`);
-        res.status(201).json(result.rows[0]);
-    } catch (err: any) {
-        if (err.code === '23505') return res.status(400).json({ error: 'El número de licencia ya existe.' });
-        res.status(500).json({ error: err.message });
-    }
-};
-
-export const updateNurse = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { name, license_number } = req.body;
-    try {
-        const result = await pool.query('UPDATE nurses SET name = $1, license_number = $2 WHERE id = $3 RETURNING *', [
-            name,
-            license_number,
-            id,
-        ]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'No encontrada' });
-        console.log(`\n👤 [PUT] Enfermera actualizada: ${name}`);
-        res.json(result.rows[0]);
-    } catch (err: any) {
-        if (err.code === '23505') return res.status(400).json({ error: 'El número de licencia ya existe.' });
-        res.status(500).json({ error: err.message });
-    }
-};
-
-export const deleteNurse = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('DELETE FROM nurses WHERE id = $1 RETURNING *', [id]);
-        if (result.rows.length === 0) return res.status(404).json({ error: 'No encontrada' });
-        console.log(`\n🗑️ [DELETE] Enfermera eliminada (ID: ${id})`);
-        res.json(result.rows[0]);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+// 5. Eliminar enfermera
+export const deleteNurse = async (id: string) => {
+    const deleted = await NurseModel.delete(id);
+    if (!deleted) throw new Error('No se pudo eliminar: Enfermera no encontrada');
+    return deleted;
 };

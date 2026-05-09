@@ -20,15 +20,14 @@ app.use(express.json());
 
 setupSwagger(app);
 
-app.use('/products', productRoutes);
-app.use('/patients', patientRoutes);
-app.use('/nurses', nurseRoutes);
-app.use('/treatments', treatmentRoutes);
-app.use('/administration', administrationRoutes);
-app.use('/dashboard', dashboardRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/patients', patientRoutes);
+app.use('/api/v1/nurses', nurseRoutes);
+app.use('/api/v1/treatments', treatmentRoutes);
+app.use('/api/v1/administration', administrationRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
-// 5. Home
-app.get('/', (_req, res) => {
+app.get('/api/v1/', (_req, res) => {
     res.send('Welcome to the SAID.SALUD API');
 });
 

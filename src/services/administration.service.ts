@@ -1,49 +1,53 @@
 /* eslint-disable max-len */
-import type { Request, Response } from 'express';
 import pool from '../config/db.js';
+import { AdministrationModel, type IAdministration } from '../models/administration.model.js';
+import { ProductModel } from '../models/product.model.js';
+import { TreatmentModel } from '../models/treatment.model.js';
 
-export const createAdministration = async (req: Request, res: Response) => {
-    const { patientId, nurseId, treatmentId, items } = req.body;
+export const processMedicalAdministration = async (data: IAdministration) => {
     const client = await pool.connect();
 
     try {
-        await client.query('BEGIN');
+        await client.query('BEGIN'); // Inicio de la transacción atómica
 
-        // 1. Obtener costo base actual del tratamiento
-        const tRes = await client.query('SELECT base_cost FROM treatments WHERE id = $1', [treatmentId]);
-        const baseCost = tRes.rows[0].base_cost;
+        // 1. Obtener el costo base actual del tratamiento
+        const treatment = await TreatmentModel.findById(data.treatmentId);
+        if (!treatment) throw new Error('El tratamiento seleccionado no existe.');
 
-        // 2. Insertar Cabecera
-        const hRes = await client.query(
-            'INSERT INTO administration_header (patient_id, nurse_id, treatment_id, base_cost_at_time) VALUES ($1, $2, $3, $4) RETURNING id',
-            [patientId, nurseId, treatmentId, baseCost]
-        );
-        const headerId = hRes.rows[0].id;
+        // 2. Crear la cabecera
+        const headerId = await AdministrationModel.createHeader(client, {
+            patientId: data.patientId,
+            nurseId: data.nurseId,
+            treatmentId: data.treatmentId,
+            baseCost: treatment.base_cost,
+        });
 
-        // 3. Procesar Insumos y Actualizar Stock
-        for (const item of items) {
-            const pRes = await client.query('SELECT price_sale, amount, name FROM products WHERE id = $1', [item.productId]);
-            const prod = pRes.rows[0];
+        // 3. Procesar cada insumo
+        for (const item of data.items) {
+            const product = await ProductModel.findById(item.productId);
 
-            if (prod.amount < item.quantity) {
-                throw new Error(`Stock insuficiente para: ${prod.name}`);
+            if (!product) throw new Error(`Producto con ID ${item.productId} no encontrado.`);
+            if (product.amount < item.quantity) {
+                throw new Error(`Stock insuficiente para: ${product.name}. Disponible: ${product.amount}`);
             }
 
-            await client.query(
-                'INSERT INTO administration_items (header_id, product_id, quantity, price_at_time) VALUES ($1, $2, $3, $4)',
-                [headerId, item.productId, item.quantity, prod.price_sale]
-            );
+            // Registrar el item con el precio de venta del momento
+            await AdministrationModel.createItem(client, {
+                headerId,
+                productId: item.productId,
+                quantity: item.quantity,
+                priceAtTime: product.price_sale,
+            });
 
-            await client.query('UPDATE products SET amount = amount - $1 WHERE id = $2', [item.quantity, item.productId]);
+            // Actualizar el stock en la tabla de productos
+            await ProductModel.updateStockWithClient(client, item.productId, item.quantity);
         }
 
         await client.query('COMMIT');
-        console.log(`\n✅ [ADMIN] Atención registrada con éxito (ID: ${headerId})`);
-        res.status(201).json({ message: 'Atención registrada correctamente', id: headerId });
+        return { success: true, headerId };
     } catch (err: any) {
         await client.query('ROLLBACK');
-        console.error(`\n❌ [ADMIN] Error: ${err.message}`);
-        res.status(500).json({ error: err.message });
+        throw err;
     } finally {
         client.release();
     }

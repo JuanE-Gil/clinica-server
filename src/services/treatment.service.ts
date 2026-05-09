@@ -1,11 +1,33 @@
-import type { Request, Response } from 'express';
-import pool from '../config/db.js';
+import { TreatmentModel, type ITreatment } from '../models/treatment.model.js';
 
-export const getAllTreatments = async (_req: Request, res: Response) => {
-    try {
-        const result = await pool.query('SELECT * FROM treatments ORDER BY name ASC');
-        res.json(result.rows);
-    } catch (err: any) {
-        res.status(500).json({ error: err.message });
-    }
+// Obtener todos los tratamientos
+export const getAllTreatments = async () => {
+    return await TreatmentModel.findAll();
+};
+
+// Obtener un tratamiento por ID
+export const getTreatmentById = async (id: string) => {
+    const treatment = await TreatmentModel.findById(id);
+    if (!treatment) throw new Error('Tratamiento no encontrado');
+    return treatment;
+};
+
+// Registrar nuevo tratamiento
+export const createTreatment = async (data: ITreatment) => {
+    if (data.base_cost < 0) throw new Error('El costo base no puede ser negativo');
+    return await TreatmentModel.create(data);
+};
+
+// Actualizar tratamiento
+export const updateTreatment = async (id: string, data: Partial<ITreatment>) => {
+    const updated = await TreatmentModel.update(id, data);
+    if (!updated) throw new Error('No se pudo actualizar: Tratamiento no encontrado');
+    return updated;
+};
+
+// Eliminar tratamiento
+export const deleteTreatment = async (id: string) => {
+    const deleted = await TreatmentModel.delete(id);
+    if (!deleted) throw new Error('No se pudo eliminar: Tratamiento no encontrado');
+    return deleted;
 };
