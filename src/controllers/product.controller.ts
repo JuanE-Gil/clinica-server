@@ -1,21 +1,25 @@
 /**
  * Controlador para la gestión de productos e inventario.
  */
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as productService from '../services/product.service.js';
 import { generateInventoryReportPdf } from '../utils/pdf.generator.js';
+import { ValidationError, NotFoundError } from '../utils/errors/AppError.js';
 
 /**
  * Obtiene la lista completa de productos.
  * @param _req Objeto de petición (no utilizado).
  * @param res Objeto de respuesta.
  */
-export const getAllProducts = async (_req: Request, res: Response) => {
+export const getAllProducts = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const products = await productService.getAllProducts();
-        res.json(products);
+        res.json({
+            status: 'success',
+            data: products
+        });
     } catch (err: any) {
-        res.status(500).json({ error: 'Error al obtener productos', message: err.message });
+        next(err);
     }
 };
 
@@ -24,18 +28,25 @@ export const getAllProducts = async (_req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID.
  * @param res Objeto de respuesta.
  */
-export const getProductById = async (req: Request, res: Response) => {
+export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const product = await productService.getProductById(id as string);
-        res.json(product);
+        if (!product) {
+            throw new NotFoundError('Producto no encontrado', 'PRODUCT_NOT_FOUND');
+        }
+
+        res.json({
+            status: 'success',
+            data: product
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -44,12 +55,15 @@ export const getProductById = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene los datos del producto.
  * @param res Objeto de respuesta.
  */
-export const createNewProduct = async (req: Request, res: Response) => {
+export const createNewProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const createdProduct = await productService.createNewProduct(req.body);
-        res.status(201).json(createdProduct);
+        res.status(201).json({
+            status: 'success',
+            data: createdProduct
+        });
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -58,18 +72,21 @@ export const createNewProduct = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID y los datos.
  * @param res Objeto de respuesta.
  */
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const updatedProduct = await productService.updateProduct(id as string, req.body);
-        res.json(updatedProduct);
+        res.json({
+            status: 'success',
+            data: updatedProduct
+        });
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -78,18 +95,22 @@ export const updateProduct = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID.
  * @param res Objeto de respuesta.
  */
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const result = await productService.deleteProduct(id as string);
-        res.json({ message: 'Producto eliminado correctamente', product: result });
+        res.json({
+            status: 'success',
+            message: 'Producto eliminado correctamente',
+            data: result
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -98,12 +119,12 @@ export const deleteProduct = async (req: Request, res: Response) => {
  * @param _req Objeto de petición (no utilizado).
  * @param res Objeto de respuesta.
  */
-export const getInventoryReport = async (_req: Request, res: Response) => {
+export const getInventoryReport = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const products = await productService.getProductsForReport();
 
         if (!products || products.length === 0) {
-            return res.status(404).json({ error: 'No hay productos para generar el reporte.' });
+            throw new NotFoundError('No hay productos para generar el reporte.', 'INVENTORY_EMPTY');
         }
 
         const buffer = await generateInventoryReportPdf(products);
@@ -113,6 +134,6 @@ export const getInventoryReport = async (_req: Request, res: Response) => {
         res.send(buffer);
     } catch (err: any) {
         console.error('❌ Error en reporte:', err.message);
-        res.status(500).json({ error: 'Error al generar el PDF del inventario.' });
+        next(err);
     }
 };

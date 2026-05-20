@@ -17,6 +17,7 @@ import treatmentRoutes from './v1/routes/treatment.routes.js';
 import administrationRoutes from './v1/routes/administration.routes.js';
 import dashboardRoutes from './v1/routes/dashboard.routes.js';
 import authRoutes from './v1/routes/auth.routes.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +39,9 @@ app.use('/api/v1/nurses', nurseRoutes);
 app.use('/api/v1/treatments', treatmentRoutes);
 app.use('/api/v1/administration', administrationRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+
+// Middleware de manejo de errores (Debe ir después de todas las rutas)
+app.use(errorHandler);
 
 /**
  * Endpoint de bienvenida para verificar que la API está accesible.

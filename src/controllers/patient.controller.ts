@@ -3,21 +3,25 @@
  */
 /* eslint-disable no-unused-vars */
 
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as patientService from '../services/patient.service.js';
 import { generateClinicalReportPdf } from '../utils/pdf.generator.js';
+import { NotFoundError, ValidationError } from '../utils/errors/AppError.js';
 
 /**
  * Obtiene la lista completa de pacientes activos.
  * @param _req Objeto de petición (no utilizado).
  * @param res Objeto de respuesta.
  */
-export const getAllPatients = async (_req: Request, res: Response) => {
+export const getAllPatients = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const patients = await patientService.getAllPatients();
-        res.json(patients);
+        res.json({
+            status: 'success',
+            data: patients
+        });
     } catch (err: any) {
-        res.status(500).json({ error: 'Error al obtener los pacientes' });
+        next(err);
     }
 };
 
@@ -26,18 +30,25 @@ export const getAllPatients = async (_req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID.
  * @param res Objeto de respuesta.
  */
-export const getPatientById = async (req: Request, res: Response) => {
+export const getPatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const patient = await patientService.getPatientById(id as string);
-        res.json(patient);
+        if (!patient) {
+            throw new NotFoundError('Paciente no encontrado', 'PATIENT_NOT_FOUND');
+        }
+
+        res.json({
+            status: 'success',
+            data: patient
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -46,18 +57,21 @@ export const getPatientById = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID del paciente.
  * @param res Objeto de respuesta.
  */
-export const getPatientHistory = async (req: Request, res: Response) => {
+export const getPatientHistory = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const history = await patientService.getPatientHistory(id as string);
-        res.json(history);
+        res.json({
+            status: 'success',
+            data: history
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -66,12 +80,15 @@ export const getPatientHistory = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene los datos del paciente.
  * @param res Objeto de respuesta.
  */
-export const createNewPatient = async (req: Request, res: Response) => {
+export const createNewPatient = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const createdPatient = await patientService.createPatient(req.body);
-        res.status(201).json(createdPatient);
+        res.status(201).json({
+            status: 'success',
+            data: createdPatient
+        });
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -80,18 +97,21 @@ export const createNewPatient = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID y los datos a actualizar.
  * @param res Objeto de respuesta.
  */
-export const updatePatientById = async (req: Request, res: Response) => {
+export const updatePatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const updatedPatient = await patientService.updatePatient(id as string, req.body);
-        res.json(updatedPatient);
+        res.json({
+            status: 'success',
+            data: updatedPatient
+        });
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -100,18 +120,22 @@ export const updatePatientById = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID del paciente.
  * @param res Objeto de respuesta.
  */
-export const deletePatientById = async (req: Request, res: Response) => {
+export const deletePatientById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const deletedPatient = await patientService.deletePatient(id as string);
-        res.json({ message: 'Paciente eliminado correctamente', patient: deletedPatient });
+        res.json({
+            status: 'success',
+            message: 'Paciente eliminado correctamente',
+            data: deletedPatient
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };
 
@@ -120,18 +144,18 @@ export const deletePatientById = async (req: Request, res: Response) => {
  * @param req Objeto de petición que contiene el ID del paciente.
  * @param res Objeto de respuesta.
  */
-export const getPatientClinicalReport = async (req: Request, res: Response) => {
+export const getPatientClinicalReport = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
 
     if (!id) {
-        return res.status(400).json({ error: 'El ID es obligatorio' });
+        return next(new ValidationError('El ID es obligatorio', [], 'MISSING_ID'));
     }
 
     try {
         const data = await patientService.getPatientDataForReport(id as string);
 
         if (!data) {
-            return res.status(404).json({ error: 'Paciente no encontrado' });
+            throw new NotFoundError('Paciente no encontrado', 'PATIENT_NOT_FOUND');
         }
 
         const buffer = await generateClinicalReportPdf(data.patient, data.history);
@@ -141,6 +165,6 @@ export const getPatientClinicalReport = async (req: Request, res: Response) => {
         res.send(buffer);
     } catch (err: any) {
         console.error('❌ Error en controlador de reporte clínico:', err.message);
-        res.status(500).json({ error: 'No se pudo generar el reporte clínico del paciente.' });
+        next(err);
     }
 };

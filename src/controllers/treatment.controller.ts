@@ -1,66 +1,87 @@
 /* eslint-disable no-unused-vars */
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as treatmentService from '../services/treatment.service.js';
+import { ValidationError, NotFoundError } from '../utils/errors/AppError.js';
 
-export const getAllTreatments = async (_req: Request, res: Response) => {
+export const getAllTreatments = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const treatments = await treatmentService.getAllTreatments();
-        res.json(treatments);
+        res.json({
+            status: 'success',
+            data: treatments
+        });
     } catch (err: any) {
-        res.status(500).json({ error: 'Error al obtener los tratamientos' });
+        next(err);
     }
 };
 
-export const getTreatmentById = async (req: Request, res: Response) => {
+export const getTreatmentById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const treatment = await treatmentService.getTreatmentById(id as string);
-        res.json(treatment);
+        if (!treatment) {
+            throw new NotFoundError('Tratamiento no encontrado', 'TREATMENT_NOT_FOUND');
+        }
+        
+        res.json({
+            status: 'success',
+            data: treatment
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };
 
-export const createNewTreatment = async (req: Request, res: Response) => {
+export const createNewTreatment = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const created = await treatmentService.createTreatment(req.body);
-        res.status(201).json(created);
+        res.status(201).json({
+            status: 'success',
+            data: created
+        });
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 };
 
-export const updateTreatmentById = async (req: Request, res: Response) => {
+export const updateTreatmentById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const updated = await treatmentService.updateTreatment(id as string, req.body);
-        res.json(updated);
+        res.json({
+            status: 'success',
+            data: updated
+        });
     } catch (err: any) {
-        res.status(400).json({ error: err.message });
+        next(err);
     }
 };
 
-export const deleteTreatmentById = async (req: Request, res: Response) => {
+export const deleteTreatmentById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { id } = req.params;
 
         if (!id) {
-            return res.status(400).json({ error: 'El ID es obligatorio' });
+            throw new ValidationError('El ID es obligatorio', [], 'MISSING_ID');
         }
 
         const deleted = await treatmentService.deleteTreatment(id as string);
-        res.json({ message: 'Tratamiento eliminado correctamente', treatment: deleted });
+        res.json({
+            status: 'success',
+            message: 'Tratamiento eliminado correctamente',
+            data: deleted
+        });
     } catch (err: any) {
-        res.status(404).json({ error: err.message });
+        next(err);
     }
 };

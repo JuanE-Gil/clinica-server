@@ -2,7 +2,7 @@
  * Controlador para la visualización de estadísticas y actividad en el tablero (dashboard).
  */
 /* eslint-disable no-unused-vars */
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as dashService from '../services/dashboard.service.js';
 import { generateManagementReportPdf } from '../utils/pdf.generator.js';
 
@@ -11,12 +11,15 @@ import { generateManagementReportPdf } from '../utils/pdf.generator.js';
  * @param _req Objeto de petición (no utilizado).
  * @param res Objeto de respuesta.
  */
-export const getDashboardStats = async (_req: Request, res: Response) => {
+export const getDashboardStats = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const stats = await dashService.getFullStats();
-        res.json(stats);
+        res.json({
+            status: 'success',
+            data: stats
+        });
     } catch (err: any) {
-        res.status(500).json({ error: 'Error al cargar estadísticas' });
+        next(err);
     }
 };
 
@@ -25,12 +28,15 @@ export const getDashboardStats = async (_req: Request, res: Response) => {
  * @param _req Objeto de petición (no utilizado).
  * @param res Objeto de respuesta.
  */
-export const getRecentActivityList = async (_req: Request, res: Response) => {
+export const getRecentActivityList = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const activity = await dashService.getRecentActivity();
-        res.json(activity);
+        res.json({
+            status: 'success',
+            data: activity
+        });
     } catch (err) {
-        res.status(500).json({ error: 'Error al cargar actividad' });
+        next(err);
     }
 };
 
@@ -39,7 +45,7 @@ export const getRecentActivityList = async (_req: Request, res: Response) => {
  * @param _req Objeto de petición (no utilizado).
  * @param res Objeto de respuesta.
  */
-export const getManagementReport = async (_req: Request, res: Response) => {
+export const getManagementReport = async (_req: Request, res: Response, next: NextFunction) => {
     try {
         const data = await dashService.getFullStats();
 
@@ -55,6 +61,6 @@ export const getManagementReport = async (_req: Request, res: Response) => {
         res.setHeader('Content-Disposition', 'attachment; filename=Reporte_Gestion_SaidSalud.pdf');
         res.send(buffer);
     } catch (err) {
-        res.status(500).json({ error: 'Error al generar reporte de gestión' });
+        next(err);
     }
 };
