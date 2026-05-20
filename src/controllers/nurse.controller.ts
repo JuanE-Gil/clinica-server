@@ -1,7 +1,15 @@
+/**
+ * Controlador para la gestión del personal de enfermería.
+ */
 /* eslint-disable no-unused-vars */
 import type { Request, Response } from 'express';
 import * as nurseService from '../services/nurse.service.js';
 
+/**
+ * Obtiene la lista completa de enfermeras.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getAllNurses = async (_req: Request, res: Response) => {
     try {
         const nurses = await nurseService.getAllNurses();
@@ -11,6 +19,11 @@ export const getAllNurses = async (_req: Request, res: Response) => {
     }
 };
 
+/**
+ * Busca una enfermera por su ID único.
+ * @param req Objeto de petición que contiene el ID en los parámetros.
+ * @param res Objeto de respuesta.
+ */
 export const getNurseById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -26,6 +39,11 @@ export const getNurseById = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Registra una nueva enfermera en el sistema.
+ * @param req Objeto de petición que contiene los datos en el cuerpo.
+ * @param res Objeto de respuesta.
+ */
 export const createNewNurse = async (req: Request, res: Response) => {
     try {
         const createdNurse = await nurseService.createNurse(req.body);
@@ -35,6 +53,11 @@ export const createNewNurse = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Actualiza la información de una enfermera existente.
+ * @param req Objeto de petición que contiene el ID y los datos.
+ * @param res Objeto de respuesta.
+ */
 export const updateNurseById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -50,6 +73,11 @@ export const updateNurseById = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * Realiza una eliminación lógica de una enfermera.
+ * @param req Objeto de petición que contiene el ID.
+ * @param res Objeto de respuesta.
+ */
 export const deleteNurseById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;

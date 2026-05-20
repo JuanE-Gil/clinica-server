@@ -1,5 +1,11 @@
+/**
+ * Modelo para la gestión del personal de enfermería en la base de datos.
+ */
 import pool from '../config/db.js';
 
+/**
+ * Interfaz que define la estructura de una enfermera.
+ */
 export interface INurse {
     id?: string;
     name: string;
@@ -7,20 +13,31 @@ export interface INurse {
     created_at?: Date;
 }
 
+/**
+ * Operaciones de base de datos para el personal de enfermería.
+ */
 export const NurseModel = {
-    // Obtener todas las enfermeras ordenadas por nombre
+    /**
+     * Obtiene todas las enfermeras activas ordenadas por nombre.
+     */
     async findAll(): Promise<INurse[]> {
-        const { rows } = await pool.query('SELECT * FROM nurses ORDER BY name ASC');
+        const { rows } = await pool.query('SELECT * FROM nurses WHERE is_active = true ORDER BY name ASC');
         return rows;
     },
 
-    // Buscar una enfermera por su ID
+    /**
+     * Busca una enfermera por su identificador único.
+     * @param id ID de la enfermera.
+     */
     async findById(id: string): Promise<INurse | null> {
         const { rows } = await pool.query('SELECT * FROM nurses WHERE id = $1', [id]);
         return rows[0] || null;
     },
 
-    // Registrar una nueva enfermera
+    /**
+     * Registra una nueva enfermera.
+     * @param data Datos de la enfermera.
+     */
     async create(data: INurse): Promise<INurse> {
         const query = `
             INSERT INTO nurses (name, license_number)
@@ -30,7 +47,11 @@ export const NurseModel = {
         return rows[0];
     },
 
-    // Actualizar datos de una enfermera
+    /**
+     * Actualiza la información de una enfermera existente.
+     * @param id ID de la enfermera.
+     * @param data Campos a actualizar.
+     */
     async update(id: string, data: Partial<INurse>): Promise<INurse | null> {
         const query = `
             UPDATE nurses
@@ -41,9 +62,12 @@ export const NurseModel = {
         return rows[0] || null;
     },
 
-    // Eliminar una enfermera del sistema
+    /**
+     * Realiza una eliminación lógica (is_active = false) de una enfermera.
+     * @param id ID de la enfermera.
+     */
     async delete(id: string): Promise<INurse | null> {
-        const { rows } = await pool.query('DELETE FROM nurses WHERE id = $1 RETURNING *', [id]);
+        const { rows } = await pool.query('UPDATE nurses SET is_active = false WHERE id = $1', [id]);
         return rows[0] || null;
     },
 };

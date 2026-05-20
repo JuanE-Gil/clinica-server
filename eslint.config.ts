@@ -7,7 +7,7 @@ export default [
     js.configs.recommended,
     {
         files: ['**/*.ts'],
-        ignores: ['**/*.config.ts'],
+        ignores: ['**/*.config.ts', 'dist/**', 'node_modules/**'],
         languageOptions: {
             parser: tsParser,
             globals: {
@@ -26,18 +26,19 @@ export default [
             quotes: ['error', 'single'],
             // Enforce semicolons at the end of statements
             semi: ['error', 'always'],
-            // Enforce consistent line breaks (LF for Unix)
-            'linebreak-style': ['error', 'unix'],
+            // Enforce consistent line breaks (CRLF for Windows)
+            'linebreak-style': ['error', 'windows'],
             // Require the use of === and !== (no implicit type conversions)
             eqeqeq: ['error', 'always'],
             // Enforce a maximum line length (usually 80 or 100 characters)
-            'max-len': ['error', { code: 100 }],
+            'max-len': ['error', { code: 125 }],
             // Enable Prettier as a lint rule
             'prettier/prettier': [
                 'error',
                 {
                     singleQuote: true,
                     semi: true,
+                    endOfLine: 'crlf',
                 },
             ],
         },

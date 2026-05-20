@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import pool from '../config/db.js';
 
 export const getFullStats = async () => {

@@ -1,19 +1,30 @@
+/**
+ * Servicio para la gestión del personal de enfermería.
+ */
 /* eslint-disable preserve-caught-error */
 import { NurseModel, type INurse } from '../models/nurse.model.js';
 
-// 1. Obtener todas las enfermeras
+/**
+ * Obtiene la lista completa de enfermeras.
+ */
 export const getAllNurses = async () => {
     return await NurseModel.findAll();
 };
 
-// 2. Obtener enfermera por ID
+/**
+ * Busca una enfermera por su ID.
+ * @param id ID único de la enfermera.
+ */
 export const getNurseById = async (id: string) => {
     const nurse = await NurseModel.findById(id);
     if (!nurse) throw new Error('Enfermera no encontrada');
     return nurse;
 };
 
-// 3. Registrar nueva enfermera
+/**
+ * Registra una nueva enfermera en el sistema.
+ * @param data Datos de la enfermera.
+ */
 export const createNurse = async (data: INurse) => {
     try {
         return await NurseModel.create(data);
@@ -26,14 +37,21 @@ export const createNurse = async (data: INurse) => {
     }
 };
 
-// 4. Actualizar enfermera
+/**
+ * Actualiza la información de una enfermera.
+ * @param id ID de la enfermera.
+ * @param data Datos parciales a actualizar.
+ */
 export const updateNurse = async (id: string, data: Partial<INurse>) => {
     const updated = await NurseModel.update(id, data);
     if (!updated) throw new Error('No se pudo actualizar: Enfermera no encontrada');
     return updated;
 };
 
-// 5. Eliminar enfermera
+/**
+ * Elimina (lógicamente) una enfermera del sistema.
+ * @param id ID de la enfermera.
+ */
 export const deleteNurse = async (id: string) => {
     const deleted = await NurseModel.delete(id);
     if (!deleted) throw new Error('No se pudo eliminar: Enfermera no encontrada');

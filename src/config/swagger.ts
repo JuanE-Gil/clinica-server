@@ -1,4 +1,7 @@
-/* eslint-disable max-len */
+/**
+ * Configuración de Swagger para la documentación automática de la API.
+ * Define la estructura básica de la documentación, esquemas de datos y endpoints.
+ */
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import type { Express } from 'express';
@@ -16,12 +19,13 @@ const swaggerOptions: swaggerJSDoc.Options = {
         },
         servers: [
             {
-                url: 'http://localhost:3000',
+                url: 'http://localhost:3000/api/v1',
                 description: 'Servidor de Desarrollo Local',
             },
         ],
         components: {
             schemas: {
+                // Esquema para Productos (Insumos médicos)
                 Product: {
                     type: 'object',
                     required: ['name', 'amount', 'price_cost', 'price_sale'],
@@ -33,6 +37,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
                         price_sale: { type: 'number', example: 25.0 },
                     },
                 },
+                // Esquema para Pacientes
                 Patient: {
                     type: 'object',
                     required: ['full_name', 'dni'],
@@ -45,6 +50,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
                         birth_date: { type: 'string', format: 'date', example: '1990-05-20' },
                     },
                 },
+                // Esquema para Personal de Enfermería
                 Nurse: {
                     type: 'object',
                     required: ['name', 'license_number'],
@@ -54,6 +60,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
                         license_number: { type: 'string', example: 'CEP-45678', description: 'Número de colegiatura único' },
                     },
                 },
+                // Esquema para Tratamientos/Procedimientos
                 Treatment: {
                     type: 'object',
                     required: ['name', 'base_cost'],
@@ -63,6 +70,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
                         base_cost: { type: 'number', example: 85.0 },
                     },
                 },
+                // Esquema para Administración de Tratamientos
                 Administration: {
                     type: 'object',
                     required: ['patientId', 'nurseId', 'treatmentId', 'items'],
@@ -82,6 +90,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
                         },
                     },
                 },
+                // Esquema para Estadísticas del Dashboard
                 DashboardStats: {
                     type: 'object',
                     properties: {
@@ -120,11 +129,16 @@ const swaggerOptions: swaggerJSDoc.Options = {
             },
         },
     },
+    // Archivos donde se encuentran las anotaciones de Swagger
     apis: ['./src/v1/routes/*.ts', './src/controllers/*.ts'],
 };
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
+/**
+ * Configura el middleware de Swagger UI en la aplicación Express.
+ * @param app Instancia de la aplicación Express.
+ */
 export const setupSwagger = (app: Express) => {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     console.log('📄 Swagger Docs disponible en http://localhost:3000/api-docs');

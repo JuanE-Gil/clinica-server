@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import pool from '../config/db.js';
 import type { PoolClient } from 'pg';
 
@@ -13,7 +12,7 @@ export interface IProduct {
 
 export const ProductModel = {
     async findAll(): Promise<IProduct[]> {
-        const { rows } = await pool.query('SELECT * FROM products ORDER BY name ASC');
+        const { rows } = await pool.query('SELECT * FROM products WHERE is_active = true ORDER BY name ASC');
         return rows;
     },
 
@@ -40,7 +39,7 @@ export const ProductModel = {
     },
 
     async delete(id: string): Promise<IProduct | null> {
-        const { rows } = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
+        const { rows } = await pool.query('UPDATE products SET is_active = false WHERE id = $1', [id]);
         return rows[0] || null;
     },
 

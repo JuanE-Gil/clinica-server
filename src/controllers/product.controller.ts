@@ -1,8 +1,15 @@
+/**
+ * Controlador para la gestión de productos e inventario.
+ */
 import type { Request, Response } from 'express';
 import * as productService from '../services/product.service.js';
 import { generateInventoryReportPdf } from '../utils/pdf.generator.js';
 
-// 1. Obtener todos los productos
+/**
+ * Obtiene la lista completa de productos.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getAllProducts = async (_req: Request, res: Response) => {
     try {
         const products = await productService.getAllProducts();
@@ -12,7 +19,11 @@ export const getAllProducts = async (_req: Request, res: Response) => {
     }
 };
 
-// 2. Obtener un producto por ID
+/**
+ * Busca un producto por su ID único.
+ * @param req Objeto de petición que contiene el ID.
+ * @param res Objeto de respuesta.
+ */
 export const getProductById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -24,15 +35,17 @@ export const getProductById = async (req: Request, res: Response) => {
         const product = await productService.getProductById(id as string);
         res.json(product);
     } catch (err: any) {
-        // Si el servicio lanza "Producto no encontrado", devolvemos 404
         res.status(404).json({ error: err.message });
     }
 };
 
-// 3. Crear nuevo producto
+/**
+ * Registra un nuevo producto en el inventario.
+ * @param req Objeto de petición que contiene los datos del producto.
+ * @param res Objeto de respuesta.
+ */
 export const createNewProduct = async (req: Request, res: Response) => {
     try {
-        // Pasamos req.body directamente al servicio
         const createdProduct = await productService.createNewProduct(req.body);
         res.status(201).json(createdProduct);
     } catch (err: any) {
@@ -40,7 +53,11 @@ export const createNewProduct = async (req: Request, res: Response) => {
     }
 };
 
-// 4. Actualizar producto
+/**
+ * Actualiza la información de un producto existente.
+ * @param req Objeto de petición que contiene el ID y los datos.
+ * @param res Objeto de respuesta.
+ */
 export const updateProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -56,7 +73,11 @@ export const updateProduct = async (req: Request, res: Response) => {
     }
 };
 
-// 5. Eliminar producto
+/**
+ * Elimina un producto del sistema.
+ * @param req Objeto de petición que contiene el ID.
+ * @param res Objeto de respuesta.
+ */
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -72,7 +93,11 @@ export const deleteProduct = async (req: Request, res: Response) => {
     }
 };
 
-// 6. Generar reporte PDF
+/**
+ * Genera y descarga el reporte de inventario en formato PDF.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getInventoryReport = async (_req: Request, res: Response) => {
     try {
         const products = await productService.getProductsForReport();

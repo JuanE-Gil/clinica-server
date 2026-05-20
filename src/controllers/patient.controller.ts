@@ -1,10 +1,17 @@
+/**
+ * Controlador para la gestión de pacientes y sus reportes clínicos.
+ */
 /* eslint-disable no-unused-vars */
-/* eslint-disable max-len */
+
 import type { Request, Response } from 'express';
 import * as patientService from '../services/patient.service.js';
 import { generateClinicalReportPdf } from '../utils/pdf.generator.js';
 
-// 1. Obtener todos los pacientes
+/**
+ * Obtiene la lista completa de pacientes activos.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getAllPatients = async (_req: Request, res: Response) => {
     try {
         const patients = await patientService.getAllPatients();
@@ -14,7 +21,11 @@ export const getAllPatients = async (_req: Request, res: Response) => {
     }
 };
 
-// 2. Obtener un paciente por ID
+/**
+ * Busca un paciente por su ID único.
+ * @param req Objeto de petición que contiene el ID.
+ * @param res Objeto de respuesta.
+ */
 export const getPatientById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -30,7 +41,11 @@ export const getPatientById = async (req: Request, res: Response) => {
     }
 };
 
-// 3. Obtener el historial clínico (JSON)
+/**
+ * Obtiene el historial clínico de un paciente en formato JSON.
+ * @param req Objeto de petición que contiene el ID del paciente.
+ * @param res Objeto de respuesta.
+ */
 export const getPatientHistory = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -46,18 +61,25 @@ export const getPatientHistory = async (req: Request, res: Response) => {
     }
 };
 
-// 4. Crear nuevo paciente
+/**
+ * Registra un nuevo paciente en el sistema.
+ * @param req Objeto de petición que contiene los datos del paciente.
+ * @param res Objeto de respuesta.
+ */
 export const createNewPatient = async (req: Request, res: Response) => {
     try {
         const createdPatient = await patientService.createPatient(req.body);
         res.status(201).json(createdPatient);
     } catch (err: any) {
-        // Aquí capturamos el error de "DNI ya registrado" que viene del Service
         res.status(400).json({ error: err.message });
     }
 };
 
-// 5. Actualizar paciente
+/**
+ * Actualiza la información de un paciente existente.
+ * @param req Objeto de petición que contiene el ID y los datos a actualizar.
+ * @param res Objeto de respuesta.
+ */
 export const updatePatientById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -73,7 +95,11 @@ export const updatePatientById = async (req: Request, res: Response) => {
     }
 };
 
-// 6. Eliminar paciente
+/**
+ * Realiza una eliminación lógica del paciente.
+ * @param req Objeto de petición que contiene el ID del paciente.
+ * @param res Objeto de respuesta.
+ */
 export const deletePatientById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -89,7 +115,11 @@ export const deletePatientById = async (req: Request, res: Response) => {
     }
 };
 
-// 7. Generar Reporte Clínico en PDF
+/**
+ * Genera y descarga el reporte clínico detallado de un paciente en formato PDF.
+ * @param req Objeto de petición que contiene el ID del paciente.
+ * @param res Objeto de respuesta.
+ */
 export const getPatientClinicalReport = async (req: Request, res: Response) => {
     const { id } = req.params;
 

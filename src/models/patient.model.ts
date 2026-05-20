@@ -1,6 +1,12 @@
+/**
+ * Modelo para la gestión de Pacientes en la base de datos PostgreSQL.
+ */
 /* eslint-disable max-len */
 import pool from '../config/db.js';
 
+/**
+ * Interfaz que define la estructura de un Paciente.
+ */
 export interface IPatient {
     id?: string;
     full_name: string;
@@ -11,20 +17,34 @@ export interface IPatient {
     created_at?: Date;
 }
 
+/**
+ * Objeto que contiene las operaciones CRUD y consultas especializadas para Pacientes.
+ */
 export const PatientModel = {
-    // Obtener todos los pacientes ordenados
+    /**
+     * Obtiene todos los pacientes activos ordenados alfabéticamente por nombre.
+     * @returns Lista de pacientes.
+     */
     async findAll(): Promise<IPatient[]> {
-        const { rows } = await pool.query('SELECT * FROM patients ORDER BY full_name ASC');
+        const { rows } = await pool.query('SELECT * FROM patients WHERE is_active = true ORDER BY full_name ASC');
         return rows;
     },
 
-    // Buscar paciente por ID
+    /**
+     * Busca un paciente por su ID único.
+     * @param id ID del paciente.
+     * @returns El paciente encontrado o null.
+     */
     async findById(id: string): Promise<IPatient | null> {
         const { rows } = await pool.query('SELECT * FROM patients WHERE id = $1', [id]);
         return rows[0] || null;
     },
 
-    // Registrar nuevo paciente
+    /**
+     * Registra un nuevo paciente en el sistema.
+     * @param data Datos del paciente a crear.
+     * @returns El paciente creado con su ID generado.
+     */
     async create(data: IPatient): Promise<IPatient> {
         const query = `
             INSERT INTO patients (full_name, dni, address, phone, birth_date)
@@ -33,7 +53,12 @@ export const PatientModel = {
         return rows[0];
     },
 
-    // Actualizar datos de paciente
+    /**
+     * Actualiza la información de un paciente existente.
+     * @param id ID del paciente a actualizar.
+     * @param data Datos parciales o totales a actualizar.
+     * @returns El paciente actualizado o null.
+     */
     async update(id: string, data: Partial<IPatient>): Promise<IPatient | null> {
         const query = `
             UPDATE patients
@@ -43,15 +68,21 @@ export const PatientModel = {
         return rows[0] || null;
     },
 
-    // Eliminar paciente
+    /**
+     * Realiza una eliminación lógica de un paciente (cambia is_active a false).
+     * @param id ID del paciente a eliminar.
+     * @returns El registro actualizado o null.
+     */
     async delete(id: string): Promise<IPatient | null> {
-        const { rows } = await pool.query('DELETE FROM patients WHERE id = $1 RETURNING *', [id]);
+        const { rows } = await pool.query('UPDATE patients SET is_active = false WHERE id = $1', [id]);
         return rows[0] || null;
     },
 
-    // --- CONSULTAS ESPECIALIZADAS ---
-
-    // Obtener historial clínico (Para la UI)
+    /**
+     * Obtiene el historial detallado de atenciones de un paciente para mostrar en la interfaz.
+     * @param patientId ID del paciente.
+     * @returns Lista de atenciones con detalles de tratamiento, enfermera e insumos.
+     */
     async findHistory(patientId: string) {
         const query = `
         SELECT
@@ -72,7 +103,11 @@ export const PatientModel = {
         return rows;
     },
 
-    // Obtener datos consolidados para el reporte (Para el PDF)
+    /**
+     * Obtiene datos consolidados de atenciones para generar reportes en PDF.
+     * @param id ID del paciente.
+     * @returns Lista de atenciones formateada para el reporte.
+     */
     async findReportData(id: string) {
         const query = `
         SELECT

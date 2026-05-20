@@ -1,8 +1,16 @@
+/**
+ * Controlador para la visualización de estadísticas y actividad en el tablero (dashboard).
+ */
 /* eslint-disable no-unused-vars */
 import type { Request, Response } from 'express';
 import * as dashService from '../services/dashboard.service.js';
 import { generateManagementReportPdf } from '../utils/pdf.generator.js';
 
+/**
+ * Obtiene las estadísticas generales para el dashboard.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getDashboardStats = async (_req: Request, res: Response) => {
     try {
         const stats = await dashService.getFullStats();
@@ -12,6 +20,11 @@ export const getDashboardStats = async (_req: Request, res: Response) => {
     }
 };
 
+/**
+ * Obtiene la lista de actividades recientes.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getRecentActivityList = async (_req: Request, res: Response) => {
     try {
         const activity = await dashService.getRecentActivity();
@@ -21,9 +34,13 @@ export const getRecentActivityList = async (_req: Request, res: Response) => {
     }
 };
 
+/**
+ * Genera y descarga el reporte de gestión en formato PDF.
+ * @param _req Objeto de petición (no utilizado).
+ * @param res Objeto de respuesta.
+ */
 export const getManagementReport = async (_req: Request, res: Response) => {
     try {
-        // Reutilizamos la lógica del servicio para obtener los datos del reporte
         const data = await dashService.getFullStats();
 
         const statsData = {

@@ -1,3 +1,7 @@
+/**
+ * Utilidad para la generación de reportes en formato PDF utilizando pdfmake.
+ * Proporciona funciones para generar reportes clínicos, de inventario y de gestión.
+ */
 /* eslint-disable no-undef */
 /* eslint-disable prettier/prettier */
 /* eslint-disable max-len */
@@ -8,9 +12,11 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdfmake = require('pdfmake');
 
+// Configuración de política de acceso a URL para pdfmake
 // eslint-disable-next-line no-unused-vars
 pdfmake.setUrlAccessPolicy((url: string) => false);
 
+// Configuración de fuentes (se cargan desde la carpeta 'fonts' en la raíz del proyecto)
 const fontsDir = path.join(process.cwd(), 'fonts');
 pdfmake.addFonts({
     Roboto: {
@@ -21,8 +27,14 @@ pdfmake.addFonts({
     },
 });
 
-
+/**
+ * Genera un PDF del reporte clínico detallado de un paciente.
+ * @param patient Datos del paciente.
+ * @param history Historial de atenciones médicas.
+ * @returns Promesa que resuelve en un Buffer con el contenido del PDF.
+ */
 export const generateClinicalReportPdf = async (patient: any, history: any[]): Promise<Buffer> => {
+    // Cálculos estadísticos para el resumen del reporte
     const totalAcumulado = history.reduce((acc, curr) => acc + Number(curr.total), 0);
     const fechaGeneracion = new Date().toLocaleDateString();
     const horaGeneracion = new Date().toLocaleTimeString();
@@ -30,10 +42,8 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
 
     const docDefinition = {
         pageSize: 'A4',
-        // Izquierda, Arriba (más espacio para el header), Derecha, Abajo
         pageMargins: [50, 80, 50, 70],
 
-        // --- ENCABEZADO REPETITIVO EN TODAS LAS PÁGINAS ---
         header: function (currentPage: number, pageCount: number) {
             return {
                 margin: [50, 30, 50, 0],
@@ -48,7 +58,6 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
             };
         },
 
-        // --- PIE DE PÁGINA REPETITIVO ---
         footer: function () {
             return {
                 margin: [50, 20, 50, 0],
@@ -67,7 +76,6 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
         },
 
         content: [
-            // Línea divisoria superior
             {
                 canvas: [{ type: 'line', x1: 0, y1: 0, x2: 495, y2: 0, lineWidth: 2, lineColor: '#2563eb' }],
                 margin: [0, 0, 0, 20],
@@ -80,7 +88,6 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                 margin: [0, 0, 0, 20],
             },
 
-            // --- CAJA DE INFORMACIÓN DEL PACIENTE ---
             {
                 style: 'patientCard',
                 table: {
@@ -98,7 +105,6 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                             },
                         ],
                         [
-                            // Añadimos Dirección y Número de atenciones
                             {
                                 text: [
                                     { text: 'Dirección: ', bold: true, color: '#1f2937' },
@@ -119,15 +125,12 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                 layout: 'noBorders',
             },
 
-            // --- TABLA DE HISTORIAL ---
             {
                 margin: [0, 20, 0, 0],
                 table: {
                     headerRows: 1,
-                    // Ajustamos las columnas para incluir a la Enfermera
                     widths: ['auto', 'auto', 'auto', '*', 'auto'],
                     body: [
-                        // Fila de encabezados
                         [
                             { text: 'FECHA', style: 'tableHeader', alignment: 'center' },
                             { text: 'ENFERMERA', style: 'tableHeader' },
@@ -135,17 +138,15 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                             { text: 'INSUMOS UTILIZADOS', style: 'tableHeader' },
                             { text: 'COSTO S/.', style: 'tableHeader', alignment: 'right' },
                         ],
-                        // Filas dinámicas de datos
                         ...history.map((h) => [
                             {
                                 text: new Date(h.administered_at).toLocaleDateString(),
                                 style: 'tableCell',
                                 alignment: 'center',
                             },
-                            { text: h.enfermera || 'Asignada', style: 'tableCell', color: '#475569' }, // Nueva columna
+                            { text: h.enfermera || 'Asignada', style: 'tableCell', color: '#475569' },
                             { text: h.tratamiento, style: 'tableCell', bold: true },
                             {
-                                // Usamos un salto de línea con viñetas en lugar de comas para los insumos
                                 text:
                                     Array.isArray(h.materiales) && h.materiales.length > 0
                                         ? '• ' + h.materiales.join('\n• ')
@@ -171,28 +172,18 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                     hLineWidth: function (i: number, node: any) {
                         return i === 0 || i === node.table.body.length ? 0 : 1;
                     },
-                    vLineWidth: function () {
-                        return 0;
-                    },
-                    hLineColor: function () {
-                        return '#e2e8f0';
-                    },
-                    paddingTop: function () {
-                        return 10;
-                    },
-                    paddingBottom: function () {
-                        return 10;
-                    },
-                    paddingLeft: function (i: number) {
-                        return i === 0 ? 0 : 8;
-                    },
+                    vLineWidth: function () { return 0; },
+                    hLineColor: function () { return '#e2e8f0'; },
+                    paddingTop: function () { return 10; },
+                    paddingBottom: function () { return 10; },
+                    paddingLeft: function (i: number) { return i === 0 ? 0 : 8; },
                     paddingRight: function (i: number, node: any) {
                         return i === node.table.widths.length - 1 ? 0 : 8;
                     },
                 },
             },
 
-            // --- GRAN TOTAL EN CAJA RESALTADA ---
+            // --- TOTAL FINAL ---
             {
                 margin: [0, 30, 0, 0],
                 layout: 'noBorders',
@@ -200,9 +191,9 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                     widths: ['*', 'auto'],
                     body: [
                         [
-                            '', // Empujamos la caja hacia la derecha
+                            '',
                             {
-                                fillColor: '#eff6ff', // Fondo azul clarito
+                                fillColor: '#eff6ff',
                                 padding: 15,
                                 text: [
                                     { text: 'TOTAL A FACTURAR:\n', color: '#3b82f6', bold: true, fontSize: 10 },
@@ -221,7 +212,7 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
             },
         ],
 
-        // --- CATÁLOGO DE ESTILOS ---
+        // --- ESTILOS VISUALES ---
         styles: {
             headerLogo: { fontSize: 18, bold: true, color: '#2563eb' },
             headerMeta: { fontSize: 9, color: '#94a3b8', margin: [0, 6, 0, 0] },
@@ -234,23 +225,27 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
         defaultStyle: { font: 'Roboto', color: '#333333' },
     };
 
-    // 3. Generamos y retornamos el Buffer
     const pdfDocGenerator = pdfmake.createPdf(docDefinition);
     return await pdfDocGenerator.getBuffer();
 };
 
+/**
+ * Genera un PDF con el estado actual del inventario y valorización de insumos.
+ * @param products Lista de productos e insumos médicos.
+ * @returns Buffer del PDF generado.
+ */
 export const generateInventoryReportPdf = async (products: any[]): Promise<Buffer> => {
     const fechaGeneracion = new Date().toLocaleDateString();
     const horaGeneracion = new Date().toLocaleTimeString();
     
-    // 1. Cálculos de Valorización (Costo vs Venta)
+    // Cálculos de valorización financiera
     const valorTotalCosto = products.reduce((acc, p) => acc + (Number(p.price_cost || 0) * Number(p.amount || 0)), 0);
     const valorTotalVenta = products.reduce((acc, p) => acc + (Number(p.price_sale || 0) * Number(p.amount || 0)), 0);
     const margenEstimado = valorTotalVenta - valorTotalCosto;
 
     const docDefinition = {
         pageSize: 'A4',
-        pageOrientation: 'landscape', // Cambiamos a horizontal para que quepan todas las columnas cómodamente
+        pageOrientation: 'landscape',
         pageMargins: [40, 70, 40, 60],
 
         header: (currentPage: number, pageCount: number) => ({
@@ -267,11 +262,9 @@ export const generateInventoryReportPdf = async (products: any[]): Promise<Buffe
             { text: 'VALORIZACIÓN INTEGRAL DE EXISTENCIAS', style: 'mainTitle', alignment: 'center' },
             { text: `Reporte generado el ${fechaGeneracion} a las ${horaGeneracion}`, alignment: 'center', style: 'dateText', margin: [0, 0, 0, 20] },
 
-            // --- TABLA DE INVENTARIO ---
             {
                 table: {
                     headerRows: 1,
-                    // N°, Producto, Cant, Costo Unit, P. Venta, Total Costo
                     widths: [25, '*', 60, 80, 80, 90], 
                     body: [
                         [
@@ -308,11 +301,10 @@ export const generateInventoryReportPdf = async (products: any[]): Promise<Buffe
                 }
             },
 
-            // --- RESUMEN FINANCIERO AL FINAL ---
             {
                 margin: [0, 30, 0, 0],
                 columns: [
-                    { text: '', width: '*' }, // Espaciador
+                    { text: '', width: '*' },
                     {
                         width: 250,
                         table: {
@@ -352,10 +344,15 @@ export const generateInventoryReportPdf = async (products: any[]): Promise<Buffe
 
     const { createRequire } = await import('module');
     const localRequire = createRequire(import.meta.url);
-    const pdfmake = localRequire('pdfmake');
-    return await pdfmake.createPdf(docDefinition).getBuffer();
+    const pdfmakeInstance = localRequire('pdfmake');
+    return await pdfmakeInstance.createPdf(docDefinition).getBuffer();
 };
 
+/**
+ * Genera un PDF de gestión con estadísticas clave (KPIs) del negocio.
+ * @param stats Objeto con estadísticas de ingresos, pacientes y stock.
+ * @returns Buffer del PDF generado.
+ */
 export const generateManagementReportPdf = async (stats: any): Promise<Buffer> => {
     const fecha = new Date().toLocaleDateString();
 
@@ -372,7 +369,6 @@ export const generateManagementReportPdf = async (stats: any): Promise<Buffer> =
                 margin: [0, 10, 0, 20],
             },
 
-            // --- SECCIÓN 1: RESUMEN EJECUTIVO (KPIs) ---
             { text: '1. RESUMEN EJECUTIVO', style: 'sectionTitle' },
             {
                 columns: [
@@ -402,7 +398,6 @@ export const generateManagementReportPdf = async (stats: any): Promise<Buffer> =
                 margin: [0, 10, 0, 20],
             },
 
-            // --- SECCIÓN 2: TRATAMIENTOS TOP ---
             { text: '2. SERVICIOS MÁS SOLICITADOS', style: 'sectionTitle' },
             {
                 table: {
@@ -420,7 +415,6 @@ export const generateManagementReportPdf = async (stats: any): Promise<Buffer> =
                 margin: [0, 10, 0, 20],
             },
 
-            // --- SECCIÓN 3: ALERTAS CRÍTICAS ---
             { text: '3. ALERTAS DE INVENTARIO (CRÍTICO)', style: 'sectionTitle', color: '#ef4444' },
             stats.stockAlerts.length > 0
                 ? {
@@ -456,6 +450,6 @@ export const generateManagementReportPdf = async (stats: any): Promise<Buffer> =
 
     const { createRequire } = await import('module');
     const localRequire = createRequire(import.meta.url);
-    const pdfmake = localRequire('pdfmake');
-    return await pdfmake.createPdf(docDefinition).getBuffer();
+    const pdfmakeInstance = localRequire('pdfmake');
+    return await pdfmakeInstance.createPdf(docDefinition).getBuffer();
 };
