@@ -53,6 +53,7 @@ export const AuthService = {
                 id: user.id,
                 email: user.email,
                 role: user.role,
+                nurse_id: user.nurse_id,
             },
         };
     },

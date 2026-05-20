@@ -26,7 +26,7 @@ export const PatientModel = {
      * @returns Lista de pacientes.
      */
     async findAll(): Promise<IPatient[]> {
-        const { rows } = await pool.query('SELECT * FROM patients WHERE is_active = true ORDER BY full_name ASC');
+        const { rows } = await pool.query('SELECT * FROM patients WHERE is_active = true ORDER BY full_name');
         return rows;
     },
 

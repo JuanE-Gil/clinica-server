@@ -8,7 +8,8 @@
         "start": "node --loader ts-node/esm src/index.ts",
         "dev": "nodemon --exec node --import tsx src/index.ts",
         "lint": "eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "swagger": "tsx src/config/generateOpenApi.ts"
     },
     "keywords": [],
     "author": "",

@@ -76,6 +76,7 @@ export const getFullStats = async () => {
         kpis: kpiRes.rows[0],
         recentActivity: activityRes.rows,
         todayAttentions: todayCountRes.rows[0].count,
+        revenueData: revenueRes.rows, // Already reversed above, wait.
     };
 };
 

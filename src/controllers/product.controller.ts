@@ -3,7 +3,7 @@
  */
 import type { Request, Response, NextFunction } from 'express';
 import * as productService from '../services/product.service.js';
-import { generateInventoryReportPdf } from '../utils/pdf.generator.js';
+import { generateInventoryReportPdf } from '../utils/pdf/index.js';
 import { ValidationError, NotFoundError } from '../utils/errors/AppError.js';
 
 /**
@@ -129,9 +129,15 @@ export const getInventoryReport = async (_req: Request, res: Response, next: Nex
 
         const buffer = await generateInventoryReportPdf(products);
 
+        if (!buffer || buffer.length === 0) {
+            throw new Error('El buffer del PDF de inventario está vacío');
+        }
+
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=Inventario_SaidSalud.pdf');
-        res.send(buffer);
+        res.setHeader('Content-Disposition', 'attachment; filename="Inventario_SaidSalud.pdf"');
+        res.setHeader('Content-Length', buffer.length.toString());
+        
+        return res.end(buffer);
     } catch (err: any) {
         console.error('❌ Error en reporte:', err.message);
         next(err);

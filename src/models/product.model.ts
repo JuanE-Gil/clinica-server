@@ -12,7 +12,7 @@ export interface IProduct {
 
 export const ProductModel = {
     async findAll(): Promise<IProduct[]> {
-        const { rows } = await pool.query('SELECT * FROM products WHERE is_active = true ORDER BY name ASC');
+        const { rows } = await pool.query('SELECT * FROM products WHERE is_active = true ORDER BY name');
         return rows;
     },
 
@@ -44,7 +44,7 @@ export const ProductModel = {
     },
 
     async findAllForReport(): Promise<IProduct[]> {
-        const { rows } = await pool.query('SELECT name, amount, price_cost, price_sale FROM products ORDER BY amount ASC');
+        const { rows } = await pool.query('SELECT name, amount, price_cost, price_sale FROM products ORDER BY amount');
         return rows;
     },
 

@@ -4,7 +4,7 @@
 /* eslint-disable no-unused-vars */
 import type { Request, Response, NextFunction } from 'express';
 import * as dashService from '../services/dashboard.service.js';
-import { generateManagementReportPdf } from '../utils/pdf.generator.js';
+import { generateManagementReportPdf } from '../utils/pdf/index.js';
 
 /**
  * Obtiene las estadísticas generales para el dashboard.
@@ -49,17 +49,27 @@ export const getManagementReport = async (_req: Request, res: Response, next: Ne
     try {
         const data = await dashService.getFullStats();
 
+        // Mapear los datos de kpis directamente al objeto que espera el generador
         const statsData = {
-            kpis: data.kpis,
+            ...data.kpis,
             treatments: data.treatments,
             stockAlerts: data.stockAlerts,
+            recentActivity: data.recentActivity,
+            revenueData: data.revenueData,
+            todayAttentions: data.todayAttentions
         };
 
         const buffer = await generateManagementReportPdf(statsData);
 
+        if (!buffer || buffer.length === 0) {
+            throw new Error('El buffer del PDF de gestión está vacío');
+        }
+
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=Reporte_Gestion_SaidSalud.pdf');
-        res.send(buffer);
+        res.setHeader('Content-Disposition', 'attachment; filename="Reporte_Gestion_SaidSalud.pdf"');
+        res.setHeader('Content-Length', buffer.length.toString());
+        
+        return res.end(buffer);
     } catch (err) {
         next(err);
     }

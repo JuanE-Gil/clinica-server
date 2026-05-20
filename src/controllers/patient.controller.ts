@@ -5,7 +5,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import * as patientService from '../services/patient.service.js';
-import { generateClinicalReportPdf } from '../utils/pdf.generator.js';
+import { generateClinicalReportPdf } from '../utils/pdf/index.js';
 import { NotFoundError, ValidationError } from '../utils/errors/AppError.js';
 
 /**
@@ -160,9 +160,15 @@ export const getPatientClinicalReport = async (req: Request, res: Response, next
 
         const buffer = await generateClinicalReportPdf(data.patient, data.history);
 
+        if (!buffer || buffer.length === 0) {
+            throw new Error('El buffer del PDF está vacío');
+        }
+
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename=Reporte_${data.patient.dni}.pdf`);
-        res.send(buffer);
+        res.setHeader('Content-Disposition', `attachment; filename="Reporte_${data.patient.dni}.pdf"`);
+        res.setHeader('Content-Length', buffer.length.toString());
+        
+        return res.end(buffer);
     } catch (err: any) {
         console.error('❌ Error en controlador de reporte clínico:', err.message);
         next(err);

@@ -10,7 +10,7 @@ export interface ITreatment {
 export const TreatmentModel = {
     // Obtener todos los tratamientos disponibles
     async findAll(): Promise<ITreatment[]> {
-        const { rows } = await pool.query('SELECT * FROM treatments WHERE is_active = true ORDER BY name ASC');
+        const { rows } = await pool.query('SELECT * FROM treatments WHERE is_active = true ORDER BY name');
         return rows;
     },
 

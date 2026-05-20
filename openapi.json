@@ -1,0 +1,782 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SAID.SALUD API",
+    "version": "1.0.0",
+    "description": "Documentación técnica de la API REST para el sistema de gestión clínica SAID.SALUD.",
+    "contact": {
+      "name": "Soporte SAID.SALUD"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Servidor de Desarrollo Local"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "required": [
+          "name",
+          "amount",
+          "price_cost",
+          "price_sale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID autogenerado"
+          },
+          "name": {
+            "type": "string",
+            "example": "Suero Fisiológico 100ml"
+          },
+          "amount": {
+            "type": "integer",
+            "example": 50
+          },
+          "price_cost": {
+            "type": "number",
+            "example": 12.5
+          },
+          "price_sale": {
+            "type": "number",
+            "example": 25
+          }
+        }
+      },
+      "Patient": {
+        "type": "object",
+        "required": [
+          "full_name",
+          "dni"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "full_name": {
+            "type": "string",
+            "example": "Juan Pérez"
+          },
+          "dni": {
+            "type": "string",
+            "example": "12345678"
+          },
+          "address": {
+            "type": "string",
+            "example": "Av. Larco 123"
+          },
+          "phone": {
+            "type": "string",
+            "example": "999888777"
+          },
+          "birth_date": {
+            "type": "string",
+            "format": "date",
+            "example": "1990-05-20"
+          }
+        }
+      },
+      "Nurse": {
+        "type": "object",
+        "required": [
+          "name",
+          "license_number"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID autogenerado"
+          },
+          "name": {
+            "type": "string",
+            "example": "Lic. Ana Rosa Espinoza"
+          },
+          "license_number": {
+            "type": "string",
+            "example": "CEP-45678",
+            "description": "Número de colegiatura único"
+          }
+        }
+      },
+      "Treatment": {
+        "type": "object",
+        "required": [
+          "name",
+          "base_cost"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Curación de Herida Compleja"
+          },
+          "base_cost": {
+            "type": "number",
+            "example": 85
+          }
+        }
+      },
+      "Administration": {
+        "type": "object",
+        "required": [
+          "patientId",
+          "nurseId",
+          "treatmentId",
+          "items"
+        ],
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nurseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "treatmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "example": 2
+                }
+              }
+            }
+          }
+        }
+      },
+      "DashboardStats": {
+        "type": "object",
+        "properties": {
+          "revenue": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "month": {
+                  "type": "string",
+                  "example": "May"
+                },
+                "income": {
+                  "type": "number",
+                  "example": 1500.5
+                },
+                "cost": {
+                  "type": "number",
+                  "example": 450.2
+                }
+              }
+            }
+          },
+          "treatments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "Inyectable"
+                },
+                "count": {
+                  "type": "integer",
+                  "example": 12
+                }
+              }
+            }
+          },
+          "kpis": {
+            "type": "object",
+            "properties": {
+              "total_patients": {
+                "type": "integer",
+                "example": 150
+              },
+              "low_stock_count": {
+                "type": "integer",
+                "example": 5
+              },
+              "revenue_month": {
+                "type": "number",
+                "example": 5400
+              }
+            }
+          },
+          "todayAttentions": {
+            "type": "integer",
+            "example": 8
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/administration": {
+      "post": {
+        "summary": "Registrar una nueva atención médica (Cabecera + Insumos)",
+        "description": "Registra una atención médica completa, incluyendo el historial y el descuento automático de stock.",
+        "tags": [
+          "Administration"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Administration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Atención registrada y stock actualizado con éxito."
+          },
+          "400": {
+            "description": "Error en la solicitud o stock insuficiente."
+          },
+          "500": {
+            "description": "Error interno del servidor o falla en la transacción."
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Iniciar sesión en el sistema",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "admin@saidsalud.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": 123456
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticación exitosa"
+          },
+          "401": {
+            "description": "Credenciales inválidas"
+          }
+        }
+      }
+    },
+    "/dashboard/stats": {
+      "get": {
+        "summary": "Obtener todas las métricas para los gráficos del dashboard",
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Datos procesados para Charts y KPIs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/recent-activity": {
+      "get": {
+        "summary": "Obtener los últimos 4 registros de actividad clínica",
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de actividad reciente para widgets laterales",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nurse": {
+                        "type": "string"
+                      },
+                      "treatment": {
+                        "type": "string"
+                      },
+                      "cost": {
+                        "type": "number"
+                      },
+                      "date": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard/report": {
+      "get": {
+        "summary": "Generar reporte gerencial consolidado (KPIs y Gráficos)",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/nurses/": {
+      "get": {
+        "summary": "Listado de todo el personal de enfermería",
+        "tags": [
+          "Nurses"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista obtenida"
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar una nueva enfermera",
+        "tags": [
+          "Nurses"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Nurse"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registro exitoso"
+          }
+        }
+      }
+    },
+    "/nurses/{id}": {
+      "get": {
+        "summary": "Buscar enfermera por ID",
+        "tags": [
+          "Nurses"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "put": {
+        "summary": "Actualizar datos de enfermera",
+        "tags": [
+          "Nurses"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Nurse"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar registro de enfermera",
+        "tags": [
+          "Nurses"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/patients/": {
+      "get": {
+        "summary": "Lista completa de pacientes",
+        "tags": [
+          "Patients"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista obtenida exitosamente"
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar nuevo paciente",
+        "tags": [
+          "Patients"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Patient"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Paciente registrado"
+          }
+        }
+      }
+    },
+    "/patients/{id}": {
+      "get": {
+        "summary": "Obtener un paciente por ID",
+        "tags": [
+          "Patients"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paciente encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar datos del paciente",
+        "tags": [
+          "Patients"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Patient"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Actualizado correctamente"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar paciente",
+        "tags": [
+          "Patients"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paciente eliminado"
+          }
+        }
+      }
+    },
+    "/patients/{id}/report": {
+      "get": {
+        "summary": "Generar historial clínico en PDF para un paciente",
+        "tags": [
+          "Patients"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/patients/{id}/history": {
+      "get": {
+        "summary": "Obtener historial de atenciones de un paciente",
+        "tags": [
+          "Patients"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial clínico detallado"
+          }
+        }
+      }
+    },
+    "/products/": {
+      "get": {
+        "summary": "Listado completo de inventario",
+        "tags": [
+          "Products"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de productos obtenida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Registrar producto",
+        "tags": [
+          "Products"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creado"
+          }
+        }
+      }
+    },
+    "/products/report": {
+      "get": {
+        "summary": "Descargar inventario completo en PDF",
+        "tags": [
+          "Products"
+        ]
+      },
+      "responses": {
+        "200": {
+          "description": "Archivo PDF del inventario"
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "summary": "Buscar por ID",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producto encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar producto",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Product"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Producto actualizado con éxito"
+          },
+          "404": {
+            "description": "No se encontró el producto"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar producto",
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Eliminado"
+          }
+        }
+      }
+    },
+    "/treatments": {
+      "get": {
+        "summary": "Listado de todos los tratamientos disponibles",
+        "tags": [
+          "Treatments"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista obtenida exitosamente"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Dashboard",
+      "description": "Estadísticas generales y métricas de rendimiento"
+    },
+    {
+      "name": "Nurses",
+      "description": "Gestión del personal de enfermería"
+    },
+    {
+      "name": "Patients",
+      "description": "Gestión de pacientes y sus historiales clínicos"
+    },
+    {
+      "name": "Products",
+      "description": "Gestión de inventario de insumos clínicos"
+    },
+    {
+      "name": "Treatments",
+      "description": "Gestión de catálogos de tratamientos y procedimientos"
+    }
+  ]
+}
