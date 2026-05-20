@@ -3,8 +3,14 @@
  */
 import { Router } from 'express';
 import * as treatCtrl from '../../controllers/treatment.controller.js';
+import { verifyToken, checkRole } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Todas las rutas requieren autenticación
+router.use(verifyToken);
+
+const allowAll = checkRole(['admin', 'user']);
 
 /**
  * @swagger
@@ -23,6 +29,6 @@ const router = Router();
  *       200:
  *         description: Lista obtenida exitosamente
  */
-router.get('/', treatCtrl.getAllTreatments);
+router.get('/', allowAll, treatCtrl.getAllTreatments);
 
 export default router;

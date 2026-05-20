@@ -15,17 +15,45 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-        return res.status(403).json({ message: 'Token no proporcionado' });
+        return res.status(403).json({
+            status: 'error',
+            message: 'Token no proporcionado',
+            code: 'TOKEN_REQUIRED'
+        });
     }
 
     // Verifica el token utilizando el secreto configurado
     jwt.verify(token, process.env.JWT_SECRET || 'super_secret_clinic_key', (err, decoded) => {
         if (err) {
-            return res.status(401).json({ message: 'No autorizado / Token expirado' });
+            return res.status(401).json({
+                status: 'error',
+                message: 'No autorizado / Token expirado',
+                code: 'UNAUTHORIZED'
+            });
         }
         
         // Almacena la información decodificada del usuario en el objeto de la petición
         (req as any).user = decoded;
         next();
     });
+};
+
+/**
+ * Middleware para la verificación de roles de usuario.
+ * @param roles Array de roles permitidos.
+ */
+export const checkRole = (roles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const user = (req as any).user;
+
+        if (!user || !roles.includes(user.role)) {
+            return res.status(403).json({ 
+                status: 'error',
+                message: 'Acceso denegado: permisos insuficientes',
+                code: 'FORBIDDEN'
+            });
+        }
+
+        next();
+    };
 };

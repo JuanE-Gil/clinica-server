@@ -4,8 +4,14 @@
  */
 import { Router } from 'express';
 import * as adminCtrl from '../../controllers/administration.controller.js';
+import { verifyToken, checkRole } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Todas las rutas requieren autenticación
+router.use(verifyToken);
+
+const allowAll = checkRole(['admin', 'user']);
 
 /**
  * @swagger
@@ -28,6 +34,6 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor o falla en la transacción.
  */
-router.post('/', adminCtrl.createNewAdministration);
+router.post('/', allowAll, adminCtrl.createNewAdministration);
 
 export default router;

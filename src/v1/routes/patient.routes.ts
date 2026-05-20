@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import * as patientCtrl from '../../controllers/patient.controller.js';
+import { verifyToken, checkRole } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Todas las rutas requieren autenticación
+router.use(verifyToken);
+
+const allowAll = checkRole(['admin', 'user']);
+const allowAdmin = checkRole(['admin']);
 
 /**
  * @swagger
@@ -21,7 +28,7 @@ const router = Router();
  *       200:
  *         description: Lista obtenida exitosamente
  */
-router.get('/', patientCtrl.getAllPatients);
+router.get('/', allowAll, patientCtrl.getAllPatients);
 
 /**
  * @swagger
@@ -40,7 +47,7 @@ router.get('/', patientCtrl.getAllPatients);
  *       200:
  *         description: Paciente encontrado
  */
-router.get('/:id', patientCtrl.getPatientById);
+router.get('/:id', allowAll, patientCtrl.getPatientById);
 
 /**
  * @swagger
@@ -56,7 +63,7 @@ router.get('/:id', patientCtrl.getPatientById);
  *           type: string
  *           format: uuid
  */
-router.get('/:id/report', patientCtrl.getPatientClinicalReport);
+router.get('/:id/report', allowAll, patientCtrl.getPatientClinicalReport);
 
 /**
  * @swagger
@@ -75,7 +82,7 @@ router.get('/:id/report', patientCtrl.getPatientClinicalReport);
  *       200:
  *         description: Historial clínico detallado
  */
-router.get('/:id/history', patientCtrl.getPatientHistory);
+router.get('/:id/history', allowAll, patientCtrl.getPatientHistory);
 
 /**
  * @swagger
@@ -94,7 +101,7 @@ router.get('/:id/history', patientCtrl.getPatientHistory);
  *       201:
  *         description: Paciente registrado
  */
-router.post('/', patientCtrl.createNewPatient);
+router.post('/', allowAll, patientCtrl.createNewPatient);
 
 /**
  * @swagger
@@ -119,7 +126,7 @@ router.post('/', patientCtrl.createNewPatient);
  *       200:
  *         description: Actualizado correctamente
  */
-router.put('/:id', patientCtrl.updatePatientById);
+router.put('/:id', allowAll, patientCtrl.updatePatientById);
 
 /**
  * @swagger
@@ -138,6 +145,6 @@ router.put('/:id', patientCtrl.updatePatientById);
  *       200:
  *         description: Paciente eliminado
  */
-router.delete('/:id', patientCtrl.deletePatientById);
+router.delete('/:id', allowAdmin, patientCtrl.deletePatientById);
 
 export default router;

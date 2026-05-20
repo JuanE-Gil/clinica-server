@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import * as productCtrl from '../../controllers/product.controller.js';
+import { verifyToken, checkRole } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Todas las rutas requieren autenticación
+router.use(verifyToken);
+
+const allowAll = checkRole(['admin', 'user']);
+const allowAdmin = checkRole(['admin']);
 
 /**
  * @swagger
@@ -13,20 +20,20 @@ const router = Router();
 /**
  * @swagger
  * /products/:
- *  get:
- *    summary: Listado completo de inventario
- *    tags: [Products]
- *  responses:
- *    200:
- *      description: Lista de productos obtenida
- *    content:
- *      application/json:
- *        schema:
- *          type: array
- *          items:
- *            $ref: '#/components/schemas/Product'
+ *   get:
+ *     summary: Listado completo de inventario
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Lista de productos obtenida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
  */
-router.get('/', productCtrl.getAllProducts);
+router.get('/', allowAll, productCtrl.getAllProducts);
 
 /**
  * @swagger
@@ -38,7 +45,7 @@ router.get('/', productCtrl.getAllProducts);
  *     200:
  *       description: Archivo PDF del inventario
  */
-router.get('/report', productCtrl.getInventoryReport);
+router.get('/report', allowAll, productCtrl.getInventoryReport);
 
 /**
  * @swagger
@@ -52,13 +59,12 @@ router.get('/report', productCtrl.getInventoryReport);
  *         required: true
  *         schema:
  *           type: string
- *           items:
- *             $ref: '#/components/schemas/Product'
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Producto encontrado
  */
-router.get('/:id', productCtrl.getProductById);
+router.get('/:id', allowAll, productCtrl.getProductById);
 
 /**
  * @swagger
@@ -76,7 +82,7 @@ router.get('/:id', productCtrl.getProductById);
  *       201:
  *         description: Creado
  */
-router.post('/', productCtrl.createNewProduct);
+router.post('/', allowAll, productCtrl.createNewProduct);
 
 /**
  * @swagger
@@ -103,7 +109,7 @@ router.post('/', productCtrl.createNewProduct);
  *       404:
  *         description: No se encontró el producto
  */
-router.put('/:id', productCtrl.updateProduct);
+router.put('/:id', allowAll, productCtrl.updateProduct);
 
 /**
  * @swagger
@@ -115,10 +121,13 @@ router.put('/:id', productCtrl.updateProduct);
  *       - in: path
  *         name: id
  *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Eliminado
  */
-router.delete('/:id', productCtrl.deleteProduct);
+router.delete('/:id', allowAdmin, productCtrl.deleteProduct);
 
 export default router;

@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import * as nurseCtrl from '../../controllers/nurse.controller.js';
+import { verifyToken, checkRole } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Todas las rutas requieren autenticación
+router.use(verifyToken);
+
+const allowAll = checkRole(['admin', 'user']);
+const allowAdmin = checkRole(['admin']);
 
 /**
  * @swagger
@@ -21,7 +28,7 @@ const router = Router();
  *       200:
  *         description: Lista obtenida
  */
-router.get('/', nurseCtrl.getAllNurses);
+router.get('/', allowAll, nurseCtrl.getAllNurses);
 
 /**
  * @swagger
@@ -40,7 +47,7 @@ router.get('/', nurseCtrl.getAllNurses);
  *       201:
  *         description: Registro exitoso
  */
-router.post('/', nurseCtrl.createNewNurse);
+router.post('/', allowAll, nurseCtrl.createNewNurse);
 
 /**
  * @swagger
@@ -78,8 +85,8 @@ router.post('/', nurseCtrl.createNewNurse);
  *         name: id
  *         required: true
  */
-router.get('/:id', nurseCtrl.getNurseById);
-router.put('/:id', nurseCtrl.updateNurseById);
-router.delete('/:id', nurseCtrl.deleteNurseById);
+router.get('/:id', allowAll, nurseCtrl.getNurseById);
+router.put('/:id', allowAll, nurseCtrl.updateNurseById);
+router.delete('/:id', allowAdmin, nurseCtrl.deleteNurseById);
 
 export default router;

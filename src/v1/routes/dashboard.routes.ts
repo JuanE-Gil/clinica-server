@@ -1,7 +1,13 @@
 import { Router } from 'express';
 import * as dashCtrl from '../../controllers/dashboard.controller.js';
+import { verifyToken, checkRole } from '../../middlewares/auth.middleware.js';
 
 const router = Router();
+
+// Solo administradores pueden ver el dashboard y sus reportes
+// Nota: verifyToken debe ejecutarse primero para que user esté disponible
+router.use(verifyToken);
+router.use(checkRole(['admin']));
 
 /**
  * @swagger
