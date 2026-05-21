@@ -56,6 +56,5 @@ Thumbs.db
 # Project specific exclusions
 clinica_app
 db.json
-GUIA_TECNICA.md
 create-admin.ts
 seed.ts

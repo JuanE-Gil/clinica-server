@@ -189,7 +189,7 @@ Se utilizan dos middlewares principales para asegurar los endpoints:
 
 ```typescript
 // Ejemplo de aplicación en rutas
-const allowAll = checkRole(['admin', 'user']);
+const allowAll = checkRole(['admin', 'nurse', 'user']);
 const allowAdmin = checkRole(['admin']);
 
 router.get('/', allowAll, ctrl.getAll);      // Ambos pueden leer

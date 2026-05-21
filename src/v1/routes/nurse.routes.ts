@@ -7,8 +7,24 @@ const router = Router();
 // Todas las rutas requieren autenticación
 router.use(verifyToken);
 
-const allowAll = checkRole(['admin', 'user']);
+const allowAll = checkRole(['admin', 'nurse', 'user']);
 const allowAdmin = checkRole(['admin']);
+
+// Middleware para validar si el usuario es el dueño del perfil o admin
+const allowSelfOrAdmin = (req: any, res: any, next: any) => {
+    const user = req.user;
+    const { id } = req.params;
+
+    if (user.role === 'admin' || user.nurse_id === id) {
+        return next();
+    }
+
+    return res.status(403).json({
+        status: 'error',
+        message: 'Acceso denegado: solo puedes consultar tu propio perfil',
+        code: 'FORBIDDEN'
+    });
+};
 
 /**
  * @swagger
@@ -28,7 +44,7 @@ const allowAdmin = checkRole(['admin']);
  *       200:
  *         description: Lista obtenida
  */
-router.get('/', allowAll, nurseCtrl.getAllNurses);
+router.get('/', allowAdmin, nurseCtrl.getAllNurses);
 
 /**
  * @swagger
@@ -47,7 +63,7 @@ router.get('/', allowAll, nurseCtrl.getAllNurses);
  *       201:
  *         description: Registro exitoso
  */
-router.post('/', allowAll, nurseCtrl.createNewNurse);
+router.post('/', allowAdmin, nurseCtrl.createNewNurse);
 
 /**
  * @swagger
@@ -85,8 +101,8 @@ router.post('/', allowAll, nurseCtrl.createNewNurse);
  *         name: id
  *         required: true
  */
-router.get('/:id', allowAll, nurseCtrl.getNurseById);
-router.put('/:id', allowAll, nurseCtrl.updateNurseById);
+router.get('/:id', allowSelfOrAdmin, nurseCtrl.getNurseById);
+router.put('/:id', allowSelfOrAdmin, nurseCtrl.updateNurseById);
 router.delete('/:id', allowAdmin, nurseCtrl.deleteNurseById);
 
 export default router;

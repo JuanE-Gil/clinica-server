@@ -10,7 +10,7 @@ const router = Router();
 // Todas las rutas requieren autenticación
 router.use(verifyToken);
 
-const allowAll = checkRole(['admin', 'user']);
+const allowAll = checkRole(['admin', 'nurse', 'user']);
 
 /**
  * @swagger

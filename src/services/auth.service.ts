@@ -64,7 +64,7 @@ export const AuthService = {
      * @returns Token JWT firmado.
      */
     generateAccessToken(user: any) {
-        return jwt.sign({ id: user.id, role: user.role, nurseId: user.nurse_id }, JWT_SECRET, {
+        return jwt.sign({ id: user.id, role: user.role, nurse_id: user.nurse_id }, JWT_SECRET, {
             expiresIn: '15m', // El token expira en 15 minutos
         });
     },

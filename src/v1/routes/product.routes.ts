@@ -7,7 +7,7 @@ const router = Router();
 // Todas las rutas requieren autenticación
 router.use(verifyToken);
 
-const allowAll = checkRole(['admin', 'user']);
+const allowAll = checkRole(['admin', 'nurse', 'user']);
 const allowAdmin = checkRole(['admin']);
 
 /**
@@ -82,7 +82,7 @@ router.get('/:id', allowAll, productCtrl.getProductById);
  *       201:
  *         description: Creado
  */
-router.post('/', allowAll, productCtrl.createNewProduct);
+router.post('/', allowAdmin, productCtrl.createNewProduct);
 
 /**
  * @swagger
@@ -109,7 +109,7 @@ router.post('/', allowAll, productCtrl.createNewProduct);
  *       404:
  *         description: No se encontró el producto
  */
-router.put('/:id', allowAll, productCtrl.updateProduct);
+router.put('/:id', allowAdmin, productCtrl.updateProduct);
 
 /**
  * @swagger
