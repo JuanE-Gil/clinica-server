@@ -22,7 +22,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
         res.json({
             status: 'success',
-            data: result
+            data: result,
         });
     } catch (error) {
         next(error);

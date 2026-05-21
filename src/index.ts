@@ -2,14 +2,7 @@
  * Punto de entrada principal del servidor Express para SAID.SALUD API.
  * Configura middlewares, rutas, documentación y el inicio del servidor.
  */
-/* eslint-disable no-unused-vars */
-import express from 'express';
-import cors from 'cors';
-import pool from './config/db.js';
-
-import { setupSwagger } from './config/swagger.js';
-
-// Importación de rutas por módulos
+import app, { registerRoutes } from './app.js';
 import productRoutes from './v1/routes/product.routes.js';
 import patientRoutes from './v1/routes/patient.routes.js';
 import nurseRoutes from './v1/routes/nurse.routes.js';
@@ -18,67 +11,19 @@ import administrationRoutes from './v1/routes/administration.routes.js';
 import dashboardRoutes from './v1/routes/dashboard.routes.js';
 import authRoutes from './v1/routes/auth.routes.js';
 import userRoutes from './v1/routes/user.routes.js';
-import { errorHandler } from './middlewares/errorHandler.js';
 
-const app = express();
+registerRoutes([
+    { path: '/auth', router: authRoutes },
+    { path: '/products', router: productRoutes },
+    { path: '/patients', router: patientRoutes },
+    { path: '/nurses', router: nurseRoutes },
+    { path: '/treatments', router: treatmentRoutes },
+    { path: '/administration', router: administrationRoutes },
+    { path: '/dashboard', router: dashboardRoutes },
+    { path: '/users', router: userRoutes },
+]);
+
 const PORT = process.env.PORT || 3000;
-
-// Configuración de Middlewares globales
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Disposition'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-})); // Habilita el Intercambio de Recursos de Origen Cruzado
-app.use(express.json()); // Permite el procesamiento de cuerpos JSON en las peticiones
-
-// Configuración de la documentación Swagger
-setupSwagger(app);
-
-// Definición de Rutas Base
-app.use('/api/v1/auth', authRoutes); // Rutas de autenticación (Login, Refresh)
-
-// Rutas de la API v1 (Protegidas)
-app.use('/api/v1/products', productRoutes);
-app.use('/api/v1/patients', patientRoutes);
-app.use('/api/v1/nurses', nurseRoutes);
-app.use('/api/v1/treatments', treatmentRoutes);
-app.use('/api/v1/administration', administrationRoutes);
-app.use('/api/v1/dashboard', dashboardRoutes);
-app.use('/api/v1/users', userRoutes);
-
-// Middleware de manejo de errores (Debe ir después de todas las rutas)
-app.use(errorHandler);
-
-/**
- * Endpoint de bienvenida para verificar que la API está accesible.
- */
-app.get('/api/v1/', (_req, res) => {
-    res.send('Welcome to the SAID.SALUD API');
-});
-
-/**
- * Endpoint de salud (Health Check) para verificar el estado del servidor y la base de datos.
- */
-app.get('/health', async (req, res) => {
-    try {
-        // Verifica la conectividad con la base de datos PostgreSQL
-        await pool.query('SELECT 1');
-
-        res.json({
-            server: true,
-            database: true,
-        });
-    } catch (err) {
-        // El servidor responde, pero la base de datos no está disponible
-        res.status(500).json({
-            server: true,
-            database: false,
-        });
-    }
-});
 
 /**
  * Inicio del servidor en el puerto configurado.
