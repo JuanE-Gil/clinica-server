@@ -21,6 +21,7 @@ API de backend robusta diseñada para la gestión integral de clínicas médicas
 - **ORM/Query Builder**: [node-postgres (pg)](https://node-postgres.com/)
 - **Documentación**: [Swagger](https://swagger.io/)
 - **Reportes**: [pdfmake](https://pdfmake.github.io/pdfmake/)
+- **Testing**: [Jest](https://jestjs.io/) & [Supertest](https://github.com/ladjs/supertest)
 
 ## ⚙️ Configuración del Entorno
 
@@ -52,6 +53,20 @@ API de backend robusta diseñada para la gestión integral de clínicas médicas
    npm run dev
    ```
 
+## 🧪 Pruebas (Testing)
+
+El proyecto utiliza Jest y Supertest para asegurar la integridad de la API. Debido al entorno ESM puro, se requiere una configuración específica para los módulos.
+
+Para ejecutar todos los tests:
+```bash
+npm test
+```
+
+### Cobertura de tests:
+- **Salud del Sistema**: Verificación de conectividad básica.
+- **Autenticación**: Login, manejo de tokens JWT y errores de credenciales.
+- **RBAC**: Control de acceso basado en roles (Admin, Nurse, User) y protección de rutas.
+
 ## 📖 Documentación de la API
 
 Una vez que el servidor esté en funcionamiento, puedes acceder a la documentación interactiva en:
@@ -59,12 +74,15 @@ Una vez que el servidor esté en funcionamiento, puedes acceder a la documentaci
 
 ## 📂 Estructura del Proyecto
 
-- `src/config`: Configuraciones de base de datos y herramientas.
+- `src/app.ts`: Configuración central de Express, middlewares y ruteo base.
+- `src/index.ts`: Punto de entrada y arranque del servidor.
+- `src/config`: Configuraciones de base de datos, Swagger y herramientas.
 - `src/controllers`: Lógica de manejo de peticiones HTTP.
 - `src/services`: Lógica de negocio centralizada.
 - `src/models`: Definiciones de esquemas y consultas a la base de datos.
 - `src/v1/routes`: Definición de endpoints de la API.
-- `src/utils`: Utilidades y generadores (PDF, etc.).
+- `src/utils`: Utilidades y generadores (PDF, errores, etc.).
+- `tests/`: Suite completa de pruebas de integración.
 
 ## 📄 Licencia
 
