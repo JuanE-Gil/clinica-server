@@ -9,31 +9,33 @@ export const headerTemplate = (currentPage: number, pageCount: number, title: st
                     {
                         text: clinicName,
                         style: 'headerLogo',
-                        width: '*'
+                        width: '*',
                     },
                     {
                         stack: [
                             { text: title, style: 'headerTitle' },
-                            { text: `Página ${currentPage} de ${pageCount}`, style: 'headerPage' }
+                            { text: `Página ${currentPage} de ${pageCount}`, style: 'headerPage' },
                         ],
                         width: 'auto',
-                        alignment: 'right'
-                    }
-                ]
+                        alignment: 'right',
+                    },
+                ],
             },
             {
                 margin: [0, 5, 0, 0],
                 canvas: [
                     {
                         type: 'line',
-                        x1: 0, y1: 0,
-                        x2: 515, y2: 0,
+                        x1: 0,
+                        y1: 0,
+                        x2: 515,
+                        y2: 0,
                         lineWidth: 2,
-                        lineColor: colors.primary
-                    }
-                ]
-            }
-        ]
+                        lineColor: colors.primary,
+                    },
+                ],
+            },
+        ],
     };
 };
 
@@ -45,30 +47,33 @@ export const footerTemplate = (dateStr: string, timeStr: string) => {
                 canvas: [
                     {
                         type: 'line',
-                        x1: 0, y1: 0,
-                        x2: 515, y2: 0,
+                        x1: 0,
+                        y1: 0,
+                        x2: 515,
+                        y2: 0,
                         lineWidth: 1,
-                        lineColor: colors.primary
-                    }
-                ]
+                        lineColor: colors.primary,
+                    },
+                ],
             },
             {
                 margin: [0, 10, 0, 0],
                 columns: [
                     {
+                        // eslint-disable-next-line max-len
                         text: 'Este documento es propiedad de SAID.SALUD y su uso es estrictamente profesional y confidencial.',
                         style: 'footerText',
-                        width: '*'
+                        width: '*',
                     },
                     {
                         text: `Generado el ${dateStr} a las ${timeStr}`,
                         style: 'footerText',
                         width: 'auto',
-                        alignment: 'right'
-                    }
-                ]
-            }
-        ]
+                        alignment: 'right',
+                    },
+                ],
+            },
+        ],
     };
 };
 
@@ -77,29 +82,29 @@ export const commonStyles = {
         fontSize: 22,
         bold: true,
         color: colors.primary,
-        letterSpacing: 2
+        letterSpacing: 2,
     },
     headerTitle: {
         fontSize: 10,
         bold: true,
         color: colors.primary,
-        textTransform: 'uppercase'
+        textTransform: 'uppercase',
     },
     headerPage: {
         fontSize: 8,
-        color: colors.lightText
+        color: colors.lightText,
     },
     footerText: {
         fontSize: 8,
         color: colors.lightText,
-        italics: true
+        italics: true,
     },
     mainTitle: {
         fontSize: 18,
         bold: true,
         color: colors.primary,
         margin: [0, 10, 0, 15],
-        alignment: 'center'
+        alignment: 'center',
     },
     sectionTitle: {
         fontSize: 12,
@@ -107,7 +112,7 @@ export const commonStyles = {
         color: colors.primary,
         margin: [0, 15, 0, 8],
         background: colors.background,
-        padding: [5, 5]
+        padding: [5, 5],
     },
     tableHeader: {
         bold: true,
@@ -115,22 +120,22 @@ export const commonStyles = {
         color: colors.white,
         fillColor: colors.primary,
         alignment: 'center',
-        margin: [0, 6, 0, 6]
+        margin: [0, 6, 0, 6],
     },
     statLabel: {
         fontSize: 9,
         bold: true,
         color: colors.secondary,
-        textTransform: 'uppercase'
+        textTransform: 'uppercase',
     },
     statValue: {
         fontSize: 18,
         bold: true,
-        color: colors.primary
+        color: colors.primary,
     },
     tableCell: {
         fontSize: 9,
         color: colors.text,
-        margin: [0, 4, 0, 4]
-    }
+        margin: [0, 4, 0, 4],
+    },
 };

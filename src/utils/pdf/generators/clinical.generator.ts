@@ -25,27 +25,50 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                                         columns: [
                                             {
                                                 stack: [
-                                                    { text: [{ text: 'Nombre: ', bold: true }, patient.full_name || 'N/A'], style: 'tableCell' },
-                                                    { text: [{ text: 'DNI: ', bold: true }, patient.dni || 'N/A'], style: 'tableCell' }
-                                                ]
+                                                    {
+                                                        text: [{ text: 'Nombre: ', bold: true }, patient.full_name || 'N/A'],
+                                                        style: 'tableCell',
+                                                    },
+                                                    {
+                                                        text: [{ text: 'DNI: ', bold: true }, patient.dni || 'N/A'],
+                                                        style: 'tableCell',
+                                                    },
+                                                ],
                                             },
                                             {
                                                 stack: [
-                                                    { text: [{ text: 'Teléfono: ', bold: true }, patient.phone || 'N/A'], style: 'tableCell' },
-                                                    { text: [{ text: 'Dirección: ', bold: true }, patient.address || 'N/A'], style: 'tableCell' },
-                                                    { text: [{ text: 'Fecha Nac.: ', bold: true }, patient.birth_date ? new Date(patient.birth_date).toLocaleDateString() : 'N/A'], style: 'tableCell' }
-                                                ]
-                                            }
-                                        ]
-                                    }
+                                                    {
+                                                        text: [{ text: 'Teléfono: ', bold: true }, patient.phone || 'N/A'],
+                                                        style: 'tableCell',
+                                                    },
+                                                    {
+                                                        text: [
+                                                            { text: 'Dirección: ', bold: true },
+                                                            patient.address || 'N/A',
+                                                        ],
+                                                        style: 'tableCell',
+                                                    },
+                                                    {
+                                                        text: [
+                                                            { text: 'Fecha Nac.: ', bold: true },
+                                                            patient.birth_date
+                                                                ? new Date(patient.birth_date).toLocaleDateString()
+                                                                : 'N/A',
+                                                        ],
+                                                        style: 'tableCell',
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
                                 ],
                                 border: [true, true, true, true],
                                 fillColor: colors.background,
-                                padding: [12, 12, 12, 12]
-                            }
-                        ]
-                    ]
-                }
+                                padding: [12, 12, 12, 12],
+                            },
+                        ],
+                    ],
+                },
             },
             { text: 'HISTORIAL DE ATENCIONES', style: 'sectionTitle', margin: [0, 25, 0, 10] },
             {
@@ -57,55 +80,44 @@ export const generateClinicalReportPdf = async (patient: any, history: any[]): P
                             { text: 'Fecha', style: 'tableHeader' },
                             { text: 'Tratamiento / Descripción', style: 'tableHeader' },
                             { text: 'Personal', style: 'tableHeader' },
-                            { text: 'Total', style: 'tableHeader' }
+                            { text: 'Total', style: 'tableHeader' },
                         ],
-                        ...(history || []).map(item => [
-                            { text: item.administered_at ? new Date(item.administered_at).toLocaleDateString() : 'N/A', style: 'tableCell' },
+                        ...(history || []).map((item) => [
+                            {
+                                text: item.administered_at ? new Date(item.administered_at).toLocaleDateString() : 'N/A',
+                                style: 'tableCell',
+                            },
                             { text: item.tratamiento || item.description || 'Sin descripción', style: 'tableCell' },
                             { text: item.enfermera || 'N/A', style: 'tableCell' },
-                            { text: `S/. ${Number(item.total ?? 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`, style: 'tableCell', alignment: 'right' }
-                        ])
-                    ]
+                            {
+                                text: `S/. ${Number(item.total ?? 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`,
+                                style: 'tableCell',
+                                alignment: 'right',
+                            },
+                        ]),
+                    ],
                 },
-                layout: 'lightHorizontalLines'
-            }
+                layout: 'lightHorizontalLines',
+            },
         ],
         styles: {
             ...commonStyles,
             infoSection: {
-                margin: [0, 10, 0, 20]
-            }
+                margin: [0, 10, 0, 20],
+            },
         },
         defaultStyle: {
-            font: 'Roboto'
-        }
+            font: 'Roboto',
+        },
     };
 
-    return new Promise((resolve, reject) => {
-        try {
-            console.log('📄 Generando PDF Clínico con pdfmake printer...');
-            const pdfDocPromise = printer.createPdfKitDocument(docDefinition);
-            
-            Promise.resolve(pdfDocPromise).then((pdfDoc) => {
-                const chunks: any[] = [];
-                // @ts-ignore
-                pdfDoc.on('data', (chunk: any) => chunks.push(chunk));
-                // @ts-ignore
-                pdfDoc.on('end', () => {
-                    const buffer = Buffer.concat(chunks);
-                    console.log(`✅ PDF Clínico generado: ${buffer.length} bytes`);
-                    resolve(buffer);
-                });
-                // @ts-ignore
-                pdfDoc.on('error', (err: any) => {
-                    console.error('❌ Error en stream de PDF Clínico:', err);
-                    reject(err);
-                });
-                pdfDoc.end();
-            }).catch(reject);
-        } catch (err) {
-            console.error('❌ Error fatal generando PDF Clínico:', err);
-            reject(err);
-        }
-    });
+    try {
+        console.log('📄 Generando PDF Clínico con pdfmake printer...');
+        const buffer = await printer.createPdf(docDefinition).getBuffer();
+        console.log(`✅ PDF Clínico generado: ${buffer.length} bytes`);
+        return buffer;
+    } catch (err) {
+        console.error('❌ Error fatal generando PDF Clínico:', err);
+        throw err;
+    }
 };

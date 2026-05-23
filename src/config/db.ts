@@ -14,7 +14,7 @@ dotenv.config();
  */
 class DatabasePool {
     private static instance: DatabasePool;
-    private pool: Pool;
+    private readonly pool: Pool;
 
     /**
      * Constructor privado que inicializa el pool de conexiones con la configuración del entorno.
