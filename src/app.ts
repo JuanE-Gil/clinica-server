@@ -5,21 +5,24 @@ import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Disposition'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-}));
+app.use(
+    cors({
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+        exposedHeaders: ['Content-Disposition'],
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
+        credentials: true,
+    })
+);
 app.use(express.json());
 
 const router = express.Router();
 app.use('/api/v1', router);
 
-export const registerRoutes = (routes: { path: string, router: express.Router }[]) => {
-    routes.forEach(route => {
+export const registerRoutes = (routes: { path: string; router: express.Router }[]) => {
+    routes.forEach((route) => {
         router.use(route.path, route.router);
     });
 };
@@ -33,7 +36,10 @@ app.get('/api/v1/', (_req, res) => {
 });
 
 app.get('/health', async (_req, res) => {
-    res.json({ server: true });
+    res.json({
+        server: true,
+        database: true,
+    });
 });
 
 export default app;

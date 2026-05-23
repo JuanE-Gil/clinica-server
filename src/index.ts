@@ -28,10 +28,15 @@ const PORT = process.env.PORT || 3000;
 /**
  * Inicio del servidor en el puerto configurado.
  */
+
 app.listen(PORT, () => {
-    console.log('\n' + '='.repeat(40));
-    console.log('🏥 SERVIDOR DE SAID.SALUD CORRIENDO');
-    console.log(`🚀 URL: http://localhost:${PORT}/api/v1/`);
-    console.log(`📄 Documentación Swagger en http://localhost:${PORT}/api-docs`);
-    console.log('='.repeat(40) + '\n');
+    console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
+
+// app.listen(PORT, () => {
+//     console.log('\n' + '='.repeat(40));
+//     console.log('🏥 SERVIDOR DE SAID.SALUD CORRIENDO');
+//     console.log(`🚀 URL: http://localhost:${PORT}/api/v1/`);
+//     console.log(`📄 Documentación Swagger en http://localhost:${PORT}/api-docs`);
+//     console.log('='.repeat(40) + '\n');
+// });

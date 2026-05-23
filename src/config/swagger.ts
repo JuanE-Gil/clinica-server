@@ -29,8 +29,33 @@ const swaggerOptions: swaggerJSDoc.Options = {
                 description: 'Servidor de Desarrollo Local',
             },
         ],
+        security: [
+            {
+                bearerAuth: [],
+            },
+        ],
         components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
             schemas: {
+                // Esquema para Usuarios
+                User: {
+                    type: 'object',
+                    required: ['email', 'role'],
+                    properties: {
+                        id: { type: 'string', format: 'uuid', description: 'ID autogenerado' },
+                        email: { type: 'string', example: 'admin@saidsalud.com' },
+                        role: { type: 'string', enum: ['admin', 'nurse'], example: 'admin' },
+                        nurse_id: { type: 'string', format: 'uuid', nullable: true },
+                        is_active: { type: 'boolean', example: true },
+                        created_at: { type: 'string', format: 'date-time' },
+                    },
+                },
                 // Esquema para Productos (Insumos médicos)
                 Product: {
                     type: 'object',
@@ -142,12 +167,9 @@ const swaggerOptions: swaggerJSDoc.Options = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 const outputPath = path.join(__dirname, '..', '..', 'openapi.json');
 
-// Comprobamos si el archivo NO existe
 if (!fs.existsSync(outputPath)) {
     fs.writeFileSync(outputPath, JSON.stringify(swaggerSpec, null, 2));
     console.log(`✅ OpenAPI specification generated at: ${outputPath}`);
-} else {
-    console.log(`⏩ El archivo ya existe en: ${outputPath}. Se omitió la generación.`);
 }
 /**
  * Configura el middleware de Swagger UI en la aplicación Express.

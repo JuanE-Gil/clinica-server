@@ -9,7 +9,7 @@
         "dev": "nodemon --exec node --import tsx src/index.ts",
         "lint": "eslint .",
         "format": "prettier --write .",
-        "swagger": "tsx src/config/generateOpenApi.ts"
+        "seed": "tsx src/utils/seed.ts"
     },
     "keywords": [],
     "author": "",
