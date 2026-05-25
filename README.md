@@ -1,43 +1,38 @@
-# 🏥 SAID.SALUD API - Sistema de Gestión Clínica
+# 🏥 SAID.SALUD API - Sistema de Gestión Clínica Integral
 
-API de backend robusta diseñada para la gestión integral de clínicas médicas, control de inventario, seguimiento de pacientes y administración de tratamientos.
+API de backend robusta desarrollada bajo una **arquitectura de capas (Onion Architecture Lite)** para garantizar la escalabilidad y el desacoplamiento de responsabilidades en la gestión del **Servicio de Atención Integral Domiciliaria (SAID)**. Este sistema sustituye procesos manuales por una plataforma automatizada, auditable y centralizada.
 
 ## 🚀 Características Principales
 
-- **Gestión de Pacientes**: Control completo de expedientes, historial clínico y generación de reportes.
-- **Control de Inventario**: Gestión de insumos médicos con alertas de stock bajo y trazabilidad de costos.
-- **Administración de Tratamientos**: Registro transaccional de atenciones médicas garantizando la integridad de datos (ACID).
-- **Dashboard de Analítica**: Métricas en tiempo real de ingresos, costos y volumen de pacientes.
-- **Seguridad**: Autenticación basada en JWT (Access/Refresh Tokens) y hashing de contraseñas con bcrypt.
-- **Reportería**: Generación dinámica de reportes clínicos en formato PDF.
-- **Documentación**: API documentada con Swagger/OpenAPI.
+- **Gestión de Pacientes**: Control de expedientes con **cálculo automático de edad** a partir de la fecha de nacimiento y geolocalización de domicilios mediante integración con **Leaflet/OpenStreetMap**.
+- **Control de Inventario**: Monitoreo de insumos con **alertas visuales de stock crítico** (umbral < 10 unidades).
+- **Gestión de Precios Manual**: La integridad financiera depende del usuario, por lo que el precio de compra y venta se ingresa **100% de forma manual**.
+- **Administración Transaccional**: Registro de atenciones médicas mediante el patrón **Unit of Work** y transacciones **ACID**, asegurando que el descuento de stock y el cobro ocurran de forma atómica.
+- **Dashboard de Inteligencia de Negocio**: Panel con diseño **Bento Grid** que muestra KPIs en tiempo real, flujo de caja e indicadores de salud del servidor/DB.
+- **Seguridad Robusta**: Autenticación mediante esquema dual de **tokens JWT (Access/Refresh Tokens)**, hashing de contraseñas con **bcrypt** y Control de Acceso Basado en Roles (**RBAC**: Admin, Nurse, Viewer).
+- **Motor de Reportería**: Generación dinámica de reportes clínicos y de inventario en formato PDF utilizando **pdfmake v0.3.x**.
 
 ## 🛠️ Stack Tecnológico
 
-- **Runtime**: [Node.js](https://nodejs.org/) (v18+)
-- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
-- **Framework**: [Express.js](https://expressjs.com/)
-- **Base de Datos**: [PostgreSQL](https://www.postgresql.org/)
-- **ORM/Query Builder**: [node-postgres (pg)](https://node-postgres.com/)
-- **Documentación**: [Swagger](https://swagger.io/)
-- **Reportes**: [pdfmake](https://pdfmake.github.io/pdfmake/)
-- **Testing**: [Jest](https://jestjs.io/) & [Supertest](https://github.com/ladjs/supertest)
+- **Runtime**: [Node.js](https://nodejs.org/) (**v20.19.0 LTS**).
+- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/) (**v5.x**).
+- **Framework**: [Express.js](https://expressjs.com/) (**v4.21.x**).
+- **Base de Datos**: [PostgreSQL](https://www.postgresql.org/) (**v15+**) con soporte para JSONB.
+- **ORM/Query Builder**: [node-postgres (pg)](https://node-postgres.com/) con **Pool de conexiones** optimizado.
+- **Documentación**: [Swagger/OpenAPI 3.0](https://swagger.io/).
+- **Logs**: **Morgan** para desarrollo y **Winston** para producción.
 
 ## ⚙️ Configuración del Entorno
 
-1. Clona el repositorio:
+1. **Clonación e Instalación**:
    ```bash
    git clone https://github.com/JuanE-Gil/clinica-server.git
    cd clinica-server
-   ```
-
-2. Instala las dependencias:
-   ```bash
    npm install
    ```
 
-3. Configura las variables de entorno:
-   Crea un archivo `.env` en la raíz con el siguiente contenido:
+2. **Variables de Entorno**:
+   Crea un archivo `.env` en la raíz del backend con los siguientes parámetros:
    ```env
    PORT=3000
    DB_USER=tu_usuario
@@ -45,48 +40,33 @@ API de backend robusta diseñada para la gestión integral de clínicas médicas
    DB_NAME=said_salud_db
    DB_PASSWORD=tu_password
    DB_PORT=5432
-   JWT_SECRET=tu_secreto_super_seguro
+   JWT_SECRET=tu_secreto_de_alta_entropia
    ```
 
-4. Ejecuta el servidor en modo desarrollo:
-   ```bash
-   npm run dev
-   ```
-
-## 🧪 Pruebas (Testing)
-
-El proyecto utiliza Jest y Supertest para asegurar la integridad de la API. Debido al entorno ESM puro, se requiere una configuración específica para los módulos.
-
-Para ejecutar todos los tests:
-```bash
-npm test
-```
-
-### Cobertura de tests:
-- **Salud del Sistema**: Verificación de conectividad básica.
-- **Autenticación**: Login, manejo de tokens JWT y errores de credenciales.
-- **RBAC**: Control de acceso basado en roles (Admin, Nurse, User) y protección de rutas.
-
-## 📖 Documentación de la API
-
-Una vez que el servidor esté en funcionamiento, puedes acceder a la documentación interactiva en:
-`http://localhost:3000/api-docs`
+3. **Ejecución**:
+   - **Desarrollo**: `npm run dev` (utiliza **tsx** para ejecución rápida).
+   - **Producción**: `npm run build` seguido de `npm start`.
 
 ## 📂 Estructura del Proyecto
 
-- `src/app.ts`: Configuración central de Express, middlewares y ruteo base.
-- `src/index.ts`: Punto de entrada y arranque del servidor.
-- `src/config`: Configuraciones de base de datos, Swagger y herramientas.
-- `src/controllers`: Lógica de manejo de peticiones HTTP.
-- `src/services`: Lógica de negocio centralizada.
-- `src/models`: Definiciones de esquemas y consultas a la base de datos.
-- `src/v1/routes`: Definición de endpoints de la API.
-- `src/utils`: Utilidades y generadores (PDF, errores, etc.).
-- `tests/`: Suite completa de pruebas de integración.
+El sistema sigue una organización modular **kebab-case** con sufijos descriptivos:
+
+- `src/config/`: Configuraciones de base de datos y Swagger.
+- `src/controllers/`: Manejadores de protocolo HTTP; extraen parámetros y delegan la lógica a los servicios.
+- `src/services/`: **Corazón del sistema**; orquestación de procesos de negocio y gestión de transacciones.
+- `src/models/`: Capa de persistencia; contiene sentencias SQL y transforma resultados en interfaces TypeScript.
+- `src/v1/routes/`: Definición de endpoints versionados y aplicación de seguridad.
+- `src/middlewares/`: Protección de rutas (`verifyToken`), validación de roles y manejador global de errores.
+- `src/utils/`: Funciones puras y el generador de PDF desacoplado.
+
+## 📖 Documentación de la API
+
+La documentación interactiva, que permite probar los endpoints y visualizar los esquemas de datos (**Product, Patient, Administration**, etc.), está disponible en:
+`http://localhost:3000/api-docs`
 
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia ISC.
 
 ---
-Desarrollado para la gestión eficiente de servicios de salud.
+**SAID.SALUD** - *Tecnología de precisión para la seguridad del paciente y la eficiencia clínica.*
